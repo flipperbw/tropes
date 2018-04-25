@@ -1,36 +1,62 @@
-#!/usr/local/bin/python2.7
+#!/usr/bin/env python
 
 import requests
 import time
 import psycopg2
 import pickle
+import htmlmin
+from bs4 import BeautifulSoup, Comment
 
-baseurl = 'http://tvtropes.org/pmwiki/pmwiki.php/'
+baseurl = 'http://tvtropes.org/pmwiki/pmwiki.php'
 
-db = psycopg2.connect(host="localhost", user="postgres", password="", database="tropes")
+db = psycopg2.connect(host="localhost", user="brett", password="", database="tropes")
 cursor = db.cursor()
 
-filelist = ['Anime.pkl', 'Film.pkl', 'Franchise.pkl', 'LightNovel.pkl', 'Literature.pkl', 'Manga.pkl', 'Series.pkl', 'VideoGame.pkl', 'VisualNovel.pkl', 'Webcomic.pkl', 'WebVideo.pkl', 'WesternAnimation.pkl']
+def loadall():
+    with open('alltropes.pkl', "rb") as f:
+        while True:
+            try:
+                yield pickle.load(f)
+            except EOFError:
+                break
 
-for f in filelist:
-    op = open(f, 'rb')
-    linkList = pickle.load(op)
-    op.close()
-        
-    for link in linkList:
-        link = link.replace('/pmwiki/pmwiki.php/', '')
+items = loadall()
+
+for item in items:
+    group = item.get('group')
+    title = item.get('title')
+    name  = item.get('name')
+    key   = item.get('key')
+    
+    if not (group and title):
+        print 'Error: {}, {}'.format(group, title)
+        continue
+    
+    cursor.execute("""select 1 from media where type = %s and title = %s;""", (group, title))
+    if cursor.rowcount != 0:
+        pass
+    else:
+        link = '{}/{}/{}'.format(baseurl, group, title)
         print link
         
-        cursor.execute("""select 1 from media where link = %s;""", (link,))
-        if cursor.rowcount != 0:
-            pass
+        try:
+            htmlData = requests.get(link).text
+            soup = BeautifulSoup(htmlData, 'lxml')
+            
+            for script in soup(["script", "link", "style", "noscript", "img", "meta"]):
+                script.extract()
+            for x in soup.find_all(text=lambda text:isinstance(text, Comment)):
+                x.extract() 
+            
+            htmlData = htmlmin.minify(unicode(soup), remove_empty_space=True)
+        except:
+            print 'Error with fetching: %s' % link
         else:
-            htmlData = requests.get(baseurl + link).text
             try:
-                cursor.execute("""INSERT INTO media VALUES (%s, %s);""", (link, htmlData))
+                cursor.execute("""INSERT INTO media (type, title, name, key, data) VALUES (%s, %s, %s, %s, %s);""", (group, title, name, key, htmlData))
                 db.commit()
             except:
-                print 'Error: %s' % link
+                print 'Error with db: %s' % link
 
         time.sleep(1)
 

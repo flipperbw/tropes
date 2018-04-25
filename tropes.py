@@ -1,41 +1,61 @@
-#!/usr/local/bin/python2.7
+#!/usr/bin/env python
 
 import json
 import time
 import pickle
 import requests
-from bs4 import BeautifulSoup
 
-selectors = ["VideoGame", "WebVideo", "Anime", "LightNovel", "VisualNovel", "WesternAnimation", "Literature", "Series", "WebAnimation", "Film", "Webcomic", "Franchise", "Manga"]
+selected_namespaces = ["Animation", "Anime", "AudioPlay", "ComicBook", "ComicStrip", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa", "Podcast", "Radio", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"]
+
 headers = {"User-Agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36", "Content-Type": "application/json; charset=UTF-8", "Accept": "application/json, text/javascript, */*; q=0.01", "Referer": "http://tvtropes.org/pmwiki/browse.php"}
 
-for select in selectors:
-    print '===> USING:   ' + select
-    empty = 0
-    pageNum = 1
-    total_list = []
 
-    while empty == 0:
-        print pageNum
-        data = json.dumps({"selected": [select], "page": pageNum, "sort": "A"})
-        q = requests.post("http://tvtropes.org/include/php/browse.api.php", headers=headers, data=data)
-        qj = q.json()
-        
-        empty = qj.get('empty')
-        
-        if empty == 0:
-            soup = BeautifulSoup(''.join(qj.get('html')))
-            alist = set([z['href'] for z in soup.find_all('a', href=True)])
-            print alist
-            
-            total_list += alist
-            pageNum += 1
-            
-            time.sleep(1)
+empty = 0
+#pageNum = 1
+#pageNum = 220
+pageNum = 479
 
-    print 'Done'
-    print total_list
+f = open('alltropes.pkl', 'a')
+
+#missed 219
+    #{'group': u'Film', 'name': u'Hello Mary Lou Prom Night II', 'key': u'383812', 'title': u'HelloMaryLouPromNightII'}
+    #{'group': u'Literature', 'name': u'Heretics Of Dune', 'key': u'497943', 'title': u'HereticsOfDune'}
+
+#missed 478
+    #{'group': u'WesternAnimation', 'name': u'Superman Shazam The Return Of Black Adam', 'key': u'351964', 'title': u'SupermanShazamTheReturnOfBlackAdam'}
+    #{'group': u'VideoGame', 'name': u'Super Robot Wars W', 'key': u'384069', 'title': u'SuperRobotWarsW'}
+
+   
+while empty == 0:
+    print pageNum
+    data = json.dumps({"selected_namespaces": selected_namespaces, "page": pageNum, "sort": "A", "randomize": 0})
+    q = requests.post("http://tvtropes.org/ajax/browse.api.php", headers=headers, data=data)
+    qj = q.json()
     
-    f = open(select + '.pkl', 'wb')
-    pickle.dump(total_list, f)
-    f.close()
+    empty = qj.get('empty')
+    
+    if empty == 0:
+        res = qj.get('results')
+        
+        #total_list = []
+        for k,r in res.iteritems():
+        	group = r.get('groupname')
+        	title = r.get('title')
+        	name  = r.get('spaced_title')
+        	key   = r.get('article_id')
+        
+        	entry = {'group': group, 'title': title, 'name': name, 'key': key}
+        	print entry
+        
+        	#total_list.append(entry)
+        	pickle.dump(entry, f)
+        
+        #pickle.dump(total_list, f)
+        
+        pageNum += 1       
+        
+        time.sleep(1)
+
+print 'Done'
+
+f.close()

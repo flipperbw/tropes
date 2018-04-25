@@ -1,0 +1,51 @@
+#addnew
+edit and run addone.py
+same with tropelist.py
+
+#See all links
+psql -Ppager=off -A -t -Upostgres tropes -c "select distinct link from matches;"
+
+#Find name
+for s in Always%sunny; do echo $s; psql -Ppager=off -Upostgres tropes -c "select link from tropelist where link ilike '"%$s%"'"; done;
+
+#Create matches
+for i in Vid/Vid; do echo $i; ./matchone.py $i; done;
+
+#See info
+psql -A -t -Ppager=off -Upostgres tropes -c "select unnest(tropes) from tropelist where link ='"$m"'"
+
+#Find the matches, sorting at end can be flipped
+for m in VideoGame/FinalFantasyX; do echo $m; psql -Ppager=off -Upostgres tropes -c "(select match_link, match_trope_count as match_cnt, similar_count as sim_cnt, round(similar_pct::numeric*100,2) as sim_pct, round(match_pct::numeric*100,2) as match_pct, round(total_similar_pct::numeric*100,2) as tot_pct from matches where link = '"$m"' order by sim_pct desc limit 40) union (select match_link, match_trope_count as match_cnt, similar_count as sim_cnt, round(similar_pct::numeric*100,2) as sim_pct, round(match_pct::numeric*100,2) as match_pct, round(total_similar_pct::numeric*100,2) as tot_pct from matches where link = '"$m"' order by tot_pct desc limit 40) union (select match_link, match_trope_count as match_cnt, similar_count as sim_cnt, round(similar_pct::numeric*100,2) as sim_pct, round(match_pct::numeric*100,2) as match_pct, round(total_similar_pct::numeric*100,2) as tot_pct from matches where link = '"$m"' and match_trope_count > least(trope_count*0.05, 15) order by match_pct desc limit 10) order by tot_pct desc, sim_pct desc;"; done;
+
+#using multiple, #use dual at end
+for m in VideoGame/FinalFantasyX; do echo $m; psql -Ppager=off -Upostgres tropes -c "select match_link, match_trope_count as match_cnt, similar_count as sim_cnt, round((similar_pct*match_pct*total_similar_pct)::numeric*100, 3) as full, round((similar_pct*total_similar_pct)::numeric*100, 3) as dual from matches where link = '"$m"' order by \"full\" desc limit 50;"; done;
+
+#See direct matches
+psql -Ppager=off -A -t -Upostgres tropes -c "select unnest(similar_tropes) from matches where link = 'VideoGame/HeavyRain' and match_link = 'Series/BreakingBad'"
+
+# See tropes of many medias
+psql -Ppager=off -A -t -Upostgres tropes -c "select a.trope, count(1) from (select distinct link, unnest(tropes) as trope from tropelist where link in ('VideoGame/FinalFantasyX', 'VideoGame/Persona3')) a group by 1 having count(1) > 1 order by 2 desc"
+
+# Better see tropes of given medias
+troplist="'VideoGame/TheWalkingDead','VideoGame/TalesOfXillia'"; tropcount=$(echo $troplist | tr ',' '\n' | wc -l); psql -Ppager=off -A -t -Upostgres tropes -c "select b.trope, b.c as cnt, round(c.pct::numeric, 4) as totpct, round((b.c * 1.0 / $tropcount)::numeric, 4), round((b.c * 1.0 / $tropcount / sqrt(c.pct) * b.c)::numeric, 4) from (select a.trope, count(1) as c from (select distinct link, unnest(tropes) as trope from tropelist where link in ($troplist)) a join tropes b on a.trope = b.trope group by 1 having count(1) > 2 order by 2 desc) b join tropes c on b.trope = c.trope order by 5"
+
+
+#see one match info
+psql -Ppager=off -Upostgres tropes -c "select match_link, match_trope_count as match_cnt, similar_count as sim_cnt, round(similar_pct::numeric*100,2) as sim_pct, round(match_pct::numeric*100,2) as match_pct, round(total_similar_pct::numeric*100,2) as tot_pct, round((similar_pct*match_pct*total_similar_pct)::numeric*100, 3) as full, round((similar_pct*total_similar_pct)::numeric*100, 3) as dual from matches where link = 'VideoGame/HearthstoneHeroesOfWarcraft' and match_link ilike '%yugioh%';"
+
+#better
+m="Manga/DeathNote"
+psql -F' ' -A -t -Ppager=off -Upostgres tropes -c "select match_link, match_trope_count as match_cnt, similar_count as sim_cnt, round(similar_pct::numeric*100,2) as sim_pct, round(match_pct::numeric*100,2) as match_pct, round(total_similar_pct::numeric*100,2) as tot_pct from matches where link = '"$m"' order by sim_pct desc limit 40"
+psql -F' ' -A -t -Ppager=off -Upostgres tropes -c "select match_link, match_trope_count as match_cnt, similar_count as sim_cnt, round(similar_pct::numeric*100,2) as sim_pct, round(match_pct::numeric*100,2) as match_pct, round(total_similar_pct::numeric*100,2) as tot_pct from matches where link = '"$m"' order by tot_pct desc limit 40"
+psql -F' ' -A -t -Ppager=off -Upostgres tropes -c "select match_link, match_trope_count as match_cnt, similar_count as sim_cnt, round((similar_pct*match_pct*total_similar_pct)::numeric*100, 3) as full, round((similar_pct*total_similar_pct)::numeric*100, 3) as dual from matches where link = '"$m"' order by \"full\" desc limit 40;"
+psql -F' ' -A -t -Ppager=off -Upostgres tropes -c "select match_link, match_trope_count as match_cnt, similar_count as sim_cnt, round((similar_pct*match_pct*total_similar_pct)::numeric*100, 3) as full, round((similar_pct*total_similar_pct)::numeric*100, 3) as dual from matches where link = '"$m"' order by \"dual\" desc limit 40;"
+
+#intersection of many tropes
+select unnest(tropes) from tropelist where link in ('VideoGame/FinalFantasyXIII') intersect select distinct unnest(tropes) from tropelist where link in ('VideoGame/FinalFantasyX', 'VideoGame/LostOdyssey');
+
+
+./manytrop.py | (read h; echo "$h"; sort -nrk 6) | head -n201 | column -t; echo;
+for i in 4 6; do ./manytrop.py | sort -nrk $i | head -n200 | column -t; echo; echo; done
+for i in 4 6; do ./manytrop.py | sort -nrk $i | head -n200 | column -t | egrep 'antasy|$'; echo; echo; done
+
+
