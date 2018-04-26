@@ -40,7 +40,7 @@ for link in links:
         
         if 'If you want to start this new page, just click the edit button above' in req:
             print '\t* * * Page does not exist: {}'.format(link)
-            continue        
+            continue
         
         soup = BeautifulSoup(req, 'lxml')
         

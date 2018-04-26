@@ -7,6 +7,7 @@ psql -Ppager=off -A -t -Upostgres tropes -c "select distinct link from matches;"
 
 #Find name
 for s in Always%sunny; do echo $s; psql -Ppager=off -Upostgres tropes -c "select link from tropelist where link ilike '"%$s%"'"; done;
+for s in veronica%mars; do echo $s; psql -Ppager=off -Upostgres tropes -c "select type ||'/'|| title from media where lower(title) like '"%$s%"'"; done;
 
 #Create matches
 for i in Vid/Vid; do echo $i; ./matchone.py $i; done;

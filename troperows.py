@@ -7,7 +7,7 @@ import time
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
 
-atoz = re.compile('Tropes.To.$')
+atoz = re.compile('Tropes(.|No)(To.)*$')
 strainer = SoupStrainer('div', {'class': 'page-content'})
 
 def soupify(d, li=[], loop=False):
@@ -22,7 +22,7 @@ def soupify(d, li=[], loop=False):
 				time.sleep(1)
 				soupify(hrefdata, li, True)
 			else:
-				print 'Found loop, skipping ' + href
+				print '--> Found loop, skipping ' + href
         else:
             href = href.replace('http://tvtropes.org/pmwiki/pmwiki.php/', '')
             #maybe only allow Main/
@@ -34,28 +34,27 @@ def soupify(d, li=[], loop=False):
 with psycopg2.connect(host="localhost", user="brett", password="", database="tropes") as db:
     cursor = db.cursor('connector', cursor_factory=RealDictCursor, withhold=True)
 
-    cursor.execute("""select type, title, data from media where type||'/'||title not in (select link from tropelist) and not (type = 'Franchise' and title = 'MassEffect');""")
-    #cursor.execute("""select * from media where title = 'LooneyTunes' and type = 'WesternAnimation';""")
+    cursor.execute("""select id, type, title, data from media m where not exists (select media_id from troperows tr WHERE m.id = tr.media_id);""")
+    #cursor.execute("""select id, type, title, data from media where type = 'Anime' and title = 'RebuildOfEvangelion';""")
     
     for row in cursor:
-        group = row['type']
-        title = row['title']
-        data  = row['data']
+        media_id = row['id']
+        group    = row['type']
+        title    = row['title']
+        data     = row['data']
         
         link = '{}/{}'.format(group, title)
 
         print link
         
-        cursor.execute("""select 1 from tropelist where link = %s;""", (link,))
-        if cursor.rowcount != 0:
-            print 'Skipping...'
-        else:
-            alltropes = soupify(data, [], False)
+        alltropes = soupify(data, [], False)
+        
+        insert_data = [(group, title, a.split('/')[0], a.split('/')[1], media_id) for a in set(alltropes)]
 
-            with db.cursor() as c2:
-                try:
-                    c2.execute("""INSERT INTO tropelist VALUES (%s, %s);""", (link, alltropes))
-                    db.commit()
-                except:
-                    print 'Error: {}'.format(link)
+        with db.cursor() as c2:
+            try:
+                c2.executemany("""INSERT INTO troperows (media_type, media_name, trope_type, trope_name, media_id) VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING;""", insert_data)
+                db.commit()
+            except:
+                print '=> Error: {}'.format(link)
 
