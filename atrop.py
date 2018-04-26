@@ -3,7 +3,6 @@
 import re
 import requests
 import sys
-import pickle
 from time import sleep
 import psycopg2
 from psycopg2.extras import RealDictCursor
