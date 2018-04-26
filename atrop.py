@@ -34,7 +34,7 @@ uri_base = '/pmwiki/pmwiki.php/'
 atoz = re.compile('Tropes(.|No)(To.)*$')
 strainer = SoupStrainer('div', {'class': 'page-content'})
 
-wanted_groups = ("animation", "anime", "audioplay", "comicbook", "comicstrip", "disney", "film", "franchise", "letsplay", "lightnovel", "literature", "machinima", "manga", "manhua", "manhwa", "podcast", "radio", "series", "theatre", "videogame", "visualnovel", "webanimation", "webcomic", "weboriginal", "webvideo", "westernanimation")
+wanted_groups = ("animation", "anime", "audioplay", "comicbook", "comicstrip", "disney", "film", "franchise", "letsplay", "lightnovel", "literature", "machinima", "manga", "manhua", "manhwa", "music", "podcast", "radio", "series", "theatre", "videogame", "visualnovel", "webanimation", "webcomic", "weboriginal", "webvideo", "westernanimation")
 
 sleep_delay = 1
 # --
@@ -54,6 +54,7 @@ last_request = None
 
 
 def wait_request(href):
+    global last_request
     if not last_request:
         sdiff = 1
     else:
@@ -203,16 +204,16 @@ class Media(object):
             if 'Inexact title. See the list below' in self.data:
                 orig_link = self.get_link()
                 
-                print '\t=> Inexact title: {}'.format()
+                print '\t=> Inexact title: {}'.format(orig_link)
                 
                 found = False
-                poss_list = soup.select('ul a[href^="http://"], ul a[href^="/pmwiki"]')
+                poss_list = soup.find('div', {'class': 'page-content'}).select('ul a[href^="http://"], ul a[href^="/pmwiki"]')
                 
                 for t in poss_list:
                     href = t.get('href')
                     group, title = get_link_data(href)
-                    if not group and title:
-                        print '\t=> Could not find proper group and title'
+                    if not (group and title):
+                        print '\t=> Could not find proper group and title: {}'.format(href)
                         continue
                     
                     self.group = group
@@ -249,7 +250,17 @@ class Media(object):
             print '\t=> Error (tropes), missing data: {}'.format(self.get_link())
             return False
         
-        alltropes = soupify(self.data)
+        cursor.execute("""select 1 from troperows where media_type = %s and media_name = %s;""", (self.group, self.title))
+        if cursor.rowcount != 0:
+            return False
+        
+        print '\tInserting into tropes...'
+        
+        alltropes = soupify(self.data, set(), False)
+        
+        if len(alltropes) == 0:
+            print '\t=> No tropes found (media_len={}): {}'.format(len(self.data), self.get_link())
+            return False
             
         insert_data = [(self.group, self.title, a.split('/')[0], a.split('/')[1], self.media_id) for a in alltropes]
 
@@ -266,9 +277,9 @@ class Media(object):
 def create_media(href):
     group, title = get_link_data(href)
             
-    if not group and title:
+    if not (group and title):
         print '\t=> Could not find proper group and title: {}'.format(href)
-        continue
+        return False
     
     this_media = Media(group, title)
     
@@ -277,9 +288,11 @@ def create_media(href):
     med_ins_res = this_media.insert_media()
     if not med_ins_res:
         print '\t=> Error with media, not setting tropes {}'.format(this_media.get_link())
-        continue
+        return False
 
     this_media.insert_tropes()
+    
+    return True
 
 
 if search_type in ('index', 'url'):
@@ -295,11 +308,15 @@ if search_type in ('index', 'url'):
                 create_media(href)
 
 elif search_type == 'all':
-    cursor.execute("""select id, type, title, name, data from media m where not exists (select media_id from troperows tr WHERE m.id = tr.media_id);""")
-    
-    for row in cursor:
-        this_media = Media(row['group'], row['title'], row['name'], row['data'], row['id'])
-        this_media.insert_tropes()
+    with db.cursor('all_search', cursor_factory=RealDictCursor, withhold=True) as c2:
+        c2.execute("""select id, type, title, name, data from media m where not exists (select media_id from troperows tr WHERE m.id = tr.media_id);""")
+        
+        for row in c2:
+            this_media = Media(row['type'], row['title'], row['name'], row['data'], row['id'])
+            
+            print this_media.get_link()
+            
+            this_media.insert_tropes()
 
 
 cursor.close()
