@@ -94,6 +94,7 @@ def soupify(d, li=set(), loop=False):
         else:
             href = href.replace(url_base, '')
             #maybe only allow Main/
+            #todo: fix typos
             li.add(href)
 
     return li
@@ -119,7 +120,7 @@ class Media(object):
 
     def get_link(self):
         return '{}/{}'.format(self.group, self.title)
-        
+
     def get_url(self):
         return url_base + self.get_link()
 
@@ -275,7 +276,7 @@ class Media(object):
 
 def create_media(href):
     group, title = get_link_data(href)
-            
+    
     if not (group and title):
         print '\t=> Could not find proper group and title: {}'.format(href)
         return False
@@ -317,6 +318,8 @@ elif search_type == 'all':
             
             this_media.insert_tropes()
 
+
+#todo: refresh materialized view of tropes
 
 cursor.close()
 db.close()
