@@ -86,11 +86,11 @@ def soupify(d, li=set(), loop=False):
         href = t.get('href')
         if atoz.search(href):
             if not loop:
-                    print '=> Found new link: ' + href
-                    hrefdata = wait_request(href)
-                    soupify(hrefdata, li, True)
+                print '=> Found new link: ' + href
+                hrefdata = wait_request(href)
+                soupify(hrefdata, li, True)
             else:
-                    print '--> Found loop, skipping ' + href
+                print '--> Found loop, skipping ' + href
         else:
             href = href.replace(url_base, '')
             # maybe only allow Main/
