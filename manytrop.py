@@ -9,8 +9,8 @@ min_tot_tropes = 80
 min_common_tropes = 1
 
 pct_exp = 0.5 # lower is more punishing
-sim_exp = 2.2
-tro_exp = 1.3
+sim_exp = 2.2 # lower is more punishing
+tro_exp = 1.2 # higher is more punishing
 
 desired_types = []
 
