@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import json
 import time
@@ -18,44 +18,44 @@ pageNum = 479
 f = open('alltropes.pkl', 'a')
 
 #missed 219
-    #{'group': u'Film', 'name': u'Hello Mary Lou Prom Night II', 'key': u'383812', 'title': u'HelloMaryLouPromNightII'}
-    #{'group': u'Literature', 'name': u'Heretics Of Dune', 'key': u'497943', 'title': u'HereticsOfDune'}
+#  {'group': u'Film', 'name': u'Hello Mary Lou Prom Night II', 'key': u'383812', 'title': u'HelloMaryLouPromNightII'}
+#  {'group': u'Literature', 'name': u'Heretics Of Dune', 'key': u'497943', 'title': u'HereticsOfDune'}
 
 #missed 478
-    #{'group': u'WesternAnimation', 'name': u'Superman Shazam The Return Of Black Adam', 'key': u'351964', 'title': u'SupermanShazamTheReturnOfBlackAdam'}
-    #{'group': u'VideoGame', 'name': u'Super Robot Wars W', 'key': u'384069', 'title': u'SuperRobotWarsW'}
+#  {'group': u'WesternAnimation', 'name': u'Superman Shazam The Return Of Black Adam', 'key': u'351964', 'title': u'SupermanShazamTheReturnOfBlackAdam'}
+#  {'group': u'VideoGame', 'name': u'Super Robot Wars W', 'key': u'384069', 'title': u'SuperRobotWarsW'}
 
-   
+
 while empty == 0:
-    print pageNum
+    print(pageNum)
     data = json.dumps({"selected_namespaces": selected_namespaces, "page": pageNum, "sort": "A", "randomize": 0})
     q = requests.post("http://tvtropes.org/ajax/browse.api.php", headers=headers, data=data)
     qj = q.json()
-    
+
     empty = qj.get('empty')
-    
+
     if empty == 0:
         res = qj.get('results')
-        
+
         #total_list = []
-        for k,r in res.iteritems():
-        	group = r.get('groupname')
-        	title = r.get('title')
-        	name  = r.get('spaced_title')
-        	key   = r.get('article_id')
-        
-        	entry = {'group': group, 'title': title, 'name': name, 'key': key}
-        	print entry
-        
-        	#total_list.append(entry)
-        	pickle.dump(entry, f)
-        
+        for k,r in res.items():
+            group = r.get('groupname')
+            title = r.get('title')
+            name  = r.get('spaced_title')
+            key   = r.get('article_id')
+
+            entry = {'group': group, 'title': title, 'name': name, 'key': key}
+            print(entry)
+
+            #total_list.append(entry)
+            pickle.dump(entry, f)
+
         #pickle.dump(total_list, f)
-        
-        pageNum += 1       
-        
+
+        pageNum += 1
+
         time.sleep(1)
 
-print 'Done'
+print('Done')
 
 f.close()

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -16,13 +16,13 @@ def soupify(d, li=[], loop=False):
     for t in tropeList:
         href = t.get('href')
         if atoz.search(href):
-			if not loop:
-				print '=> Found new link: ' + href
-				hrefdata = requests.get(href).text
-				time.sleep(1)
-				soupify(hrefdata, li, True)
-			else:
-				print 'Found loop, skipping ' + href
+            if not loop:
+                print('=> Found new link: ' + href)
+                hrefdata = requests.get(href).text
+                time.sleep(1)
+                soupify(hrefdata, li, True)
+            else:
+                print('Found loop, skipping ' + href)
         else:
             href = href.replace('http://tvtropes.org/pmwiki/pmwiki.php/', '')
             #maybe only allow Main/
@@ -36,19 +36,19 @@ with psycopg2.connect(host="localhost", user="brett", password="", database="tro
 
     cursor.execute("""select type, title, data from media where type||'/'||title not in (select link from tropelist) and not (type = 'Franchise' and title = 'MassEffect');""")
     #cursor.execute("""select * from media where title = 'LooneyTunes' and type = 'WesternAnimation';""")
-    
+
     for row in cursor:
         group = row['type']
         title = row['title']
         data  = row['data']
-        
+
         link = '{}/{}'.format(group, title)
 
-        print link
-        
+        print(link)
+
         cursor.execute("""select 1 from tropelist where link = %s;""", (link,))
         if cursor.rowcount != 0:
-            print 'Skipping...'
+            print('Skipping...')
         else:
             alltropes = soupify(data, [], False)
 
@@ -57,5 +57,4 @@ with psycopg2.connect(host="localhost", user="brett", password="", database="tro
                     c2.execute("""INSERT INTO tropelist VALUES (%s, %s);""", (link, alltropes))
                     db.commit()
                 except:
-                    print 'Error: {}'.format(link)
-
+                    print('Error: {}'.format(link))

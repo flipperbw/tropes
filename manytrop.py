@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import psycopg2
 import sys
@@ -80,7 +80,7 @@ def getAdj(sim, tro):
     return round((sim**sim_exp) * 1.0 / (tro**tro_exp), 3)  # tropeCnt**1.4
 
 
-print '\t'.join(['TYPE', 'NAME', 'TOT', 'SIM', 'PCT', 'ADJ', 'ADJ2'])
+print('\t'.join(['TYPE', 'NAME', 'TOT', 'SIM', 'PCT', 'ADJ', 'ADJ2']))
 
 cursor.execute(trope_query)
 
@@ -103,6 +103,6 @@ for row in cursor:
             adjPct = getAdj(simCntAdj, tropeCnt)
 
             print_list = [typ, nam, str(tropeCnt), str(similarCnt), str(pct), str(adj), str(adjPct)]
-            print '\t'.join(print_list)
+            print('\t'.join(print_list))
 
 db.close()

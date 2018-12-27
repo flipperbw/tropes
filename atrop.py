@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import re
 import requests
@@ -14,16 +14,16 @@ from datetime import datetime
 # for i in $(cat indices.txt); do echo $i; echo "======="; ./missing.py $i; sleep 1; done;
 
 if len(sys.argv) < 2:
-    print 'Input search type (index|url|all) and urls (,)'
+    print('Input search type (index|url|all) and urls (,)')
     sys.exit(1)
 
 search_type = sys.argv[1]
 if search_type not in ('index', 'url', 'all'):
-    print 'Search type must be index, url, or all'
+    print('Search type must be index, url, or all')
     sys.exit(1)
 
 if search_type != 'all' and len(sys.argv) < 3:
-    print 'Input url'
+    print('Input url')
     sys.exit(1)
 
 # -- globals
@@ -86,11 +86,11 @@ def soupify(d, li=set(), loop=False):
         href = t.get('href')
         if atoz.search(href):
             if not loop:
-                print '=> Found new link: ' + href
+                print('=> Found new link: ' + href)
                 hrefdata = wait_request(href)
                 soupify(hrefdata, li, True)
             else:
-                print '--> Found loop, skipping ' + href
+                print('--> Found loop, skipping ' + href)
         else:
             href = href.replace(url_base, '')
             # maybe only allow Main/
@@ -129,7 +129,7 @@ class Media(object):
 
     def insert_media(self):
         if self.group.lower() not in wanted_groups:
-            print '\tUnwanted group: {}'.format(self.group)
+            print('\tUnwanted group: {}'.format(self.group))
             return False
 
         cursor.execute("""select id, data from media where type = %s and title = %s;""", (self.group, self.title))
@@ -139,7 +139,7 @@ class Media(object):
             self.media_id = row_data['id']
             self.data = row_data['data']
         else:
-            print '\tInserting into media...'
+            print('\tInserting into media...')
 
             href = self.get_url()
             req = wait_request(href)
@@ -148,12 +148,12 @@ class Media(object):
 
             name_div = soup.find('ul', {'class': 'breadcrumbs'})
             if not name_div:
-                print '\t=> Could not find true name (soup) for: {}'.format(self.get_link())
+                print('\t=> Could not find true name (soup) for: {}'.format(self.get_link()))
             else:
                 true_name_a = name_div.find_all('a')
 
                 if len(true_name_a) == 0:
-                    print '\t=> Could not find true name (length) for: {}'.format(self.get_link())
+                    print('\t=> Could not find true name (length) for: {}'.format(self.get_link()))
                 else:
                     true_name = true_name_a[-1].get('href').replace(domain_base, '').replace(uri_base, '')
                     true_type, true_title = true_name.split('/')
@@ -170,41 +170,41 @@ class Media(object):
                         true_type = 'LightNovel'
 
                     if true_type.lower() not in wanted_groups:
-                        print '\tUnwanted group: {}'.format(true_type)
+                        print('\tUnwanted group: {}'.format(true_type))
                         return False
 
                     true_name = '{}/{}'.format(true_type, true_title)
                     if true_name != self.get_link():
-                        print '\t-> Switching old {}/{} to {}/{}'.format(self.group, self.title, true_type, true_title)
+                        print('\t-> Switching old {}/{} to {}/{}'.format(self.group, self.title, true_type, true_title))
                         self.group = true_type
                         self.title = true_title
 
                         cursor.execute("""select 1 from media where type = %s and title = %s;""", (self.group, self.title))
                         if cursor.rowcount != 0:
-                            print '\tNew name already exists, skipping...'
+                            print('\tNew name already exists, skipping...')
                             return False
 
-                htmlData = htmlmin.minify(unicode(soup), remove_empty_space=True)
+                htmlData = htmlmin.minify(str(soup), remove_empty_space=True)
                 self.data = htmlData
 
             title_divs = soup.select('.page-title')
             if not title_divs:
-                print '\t=> Error, could not find name: {}'.format(self.get_link())
+                print('\t=> Error, could not find name: {}'.format(self.get_link()))
             else:
                 media_name_spl = title_divs[0].text.split('/')
                 if not media_name_spl:
-                    print '\t=> Error, could not find name: {}'.format(self.get_link())
+                    print('\t=> Error, could not find name: {}'.format(self.get_link()))
                 else:
                     self.name = media_name_spl[-1].strip()
 
             if 'Unable to connect to database server' in self.data:
-                print '\t=> Error, Server down: {}'.format(self.get_link())
+                print('\t=> Error, Server down: {}'.format(self.get_link()))
                 return False
 
             if 'Inexact title. See the list below' in self.data:
                 orig_link = self.get_link()
 
-                print '\t=> Inexact title: {}'.format(orig_link)
+                print('\t=> Inexact title: {}'.format(orig_link))
 
                 found = False
                 poss_list = soup.find('div', {'class': 'page-content'}).select('ul a[href^="http://"], ul a[href^="/pmwiki"]')
@@ -213,7 +213,7 @@ class Media(object):
                     href = t.get('href')
                     group, title = get_link_data(href)
                     if not (group and title):
-                        print '\t=> Could not find proper group and title: {}'.format(href)
+                        print('\t=> Could not find proper group and title: {}'.format(href))
                         continue
 
                     self.group = group
@@ -224,20 +224,20 @@ class Media(object):
                         found = True
 
                 if not found:
-                    print '\t=> Error, could not find correct title: {}'.format(orig_link)
+                    print('\t=> Error, could not find correct title: {}'.format(orig_link))
                     return False
 
                 return True
 
             if 'If you want to start this new page, just click the edit button above' in self.data:
-                print '\t=> Error, Page does not exist: {}'.format(self.get_link())
+                print('\t=> Error, Page does not exist: {}'.format(self.get_link()))
                 return False
 
             try:
                 cursor.execute("""INSERT INTO media (type, title, name, data) VALUES (%s, %s, %s, %s) RETURNING id;""", (self.group, self.title, self.name, self.data))
                 db.commit()
             except:
-                print '\t=> Error with db(media): {}'.format(self.get_link())
+                print('\t=> Error with db(media): {}'.format(self.get_link()))
                 return False
             else:
                 self.media_id = cursor.fetchone()['id']
@@ -246,19 +246,19 @@ class Media(object):
 
     def insert_tropes(self):
         if not self.data:
-            print '\t=> Error (tropes), missing data: {}'.format(self.get_link())
+            print('\t=> Error (tropes), missing data: {}'.format(self.get_link()))
             return False
 
         cursor.execute("""select 1 from troperows where media_type = %s and media_name = %s;""", (self.group, self.title))
         if cursor.rowcount != 0:
             return False
 
-        print '\tInserting into tropes...'
+        print('\tInserting into tropes...')
 
         alltropes = soupify(self.data, set(), False)
 
         if len(alltropes) == 0:
-            print '\t=> No tropes found (media_len={}): {}'.format(len(self.data), self.get_link())
+            print('\t=> No tropes found (media_len={}): {}'.format(len(self.data), self.get_link()))
             return False
 
         insert_data = [(self.group, self.title, a.split('/')[0], a.split('/')[1], self.media_id) for a in alltropes]
@@ -267,7 +267,7 @@ class Media(object):
             cursor.executemany("""INSERT INTO troperows (media_type, media_name, trope_type, trope_name, media_id) VALUES (%s, %s, %s, %s, %s) ON CONFLICT DO NOTHING;""", insert_data)
             db.commit()
         except:
-            print '\t=> Error with db(tropes): {}'.format(self.get_link())
+            print('\t=> Error with db(tropes): {}'.format(self.get_link()))
             return False
 
         return True
@@ -277,16 +277,16 @@ def create_media(href):
     group, title = get_link_data(href)
 
     if not (group and title):
-        print '\t=> Could not find proper group and title: {}'.format(href)
+        print('\t=> Could not find proper group and title: {}'.format(href))
         return False
 
     this_media = Media(group, title)
 
-    print this_media.get_link()
+    print(this_media.get_link())
 
     med_ins_res = this_media.insert_media()
     if not med_ins_res:
-        print '\t=> Error with media, not setting tropes {}'.format(this_media.get_link())
+        print('\t=> Error with media, not setting tropes {}'.format(this_media.get_link()))
         return False
 
     this_media.insert_tropes()
@@ -313,7 +313,7 @@ elif search_type == 'all':
         for row in c2:
             this_media = Media(row['type'], row['title'], row['name'], row['data'], row['id'])
 
-            print this_media.get_link()
+            print(this_media.get_link())
 
             this_media.insert_tropes()
 

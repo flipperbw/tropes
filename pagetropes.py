@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import requests
 import time
@@ -27,36 +27,36 @@ for item in items:
     title = item.get('title')
     name  = item.get('name')
     key   = item.get('key')
-    
+
     if not (group and title):
-        print 'Error: {}, {}'.format(group, title)
+        print('Error: {}, {}'.format(group, title))
         continue
-    
+
     cursor.execute("""select 1 from media where type = %s and title = %s;""", (group, title))
     if cursor.rowcount != 0:
         pass
     else:
         link = '{}/{}/{}'.format(baseurl, group, title)
-        print link
-        
+        print(link)
+
         try:
             htmlData = requests.get(link).text
             soup = BeautifulSoup(htmlData, 'lxml')
-            
+
             for script in soup(["script", "link", "style", "noscript", "img", "meta"]):
                 script.extract()
             for x in soup.find_all(text=lambda text:isinstance(text, Comment)):
-                x.extract() 
-            
-            htmlData = htmlmin.minify(unicode(soup), remove_empty_space=True)
+                x.extract()
+
+            htmlData = htmlmin.minify(str(soup), remove_empty_space=True)
         except:
-            print 'Error with fetching: %s' % link
+            print('Error with fetching: %s' % link)
         else:
             try:
                 cursor.execute("""INSERT INTO media (type, title, name, key, data) VALUES (%s, %s, %s, %s, %s);""", (group, title, name, key, htmlData))
                 db.commit()
             except:
-                print 'Error with db: %s' % link
+                print('Error with db: %s' % link)
 
         time.sleep(1)
 

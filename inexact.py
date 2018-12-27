@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -17,40 +17,40 @@ with psycopg2.connect(host="localhost", user="brett", password="", database="tro
 
     #cursor.execute("""select type, title, data from media where data like '%Inexact title. See the list below%' order by 2,1;""")
     cursor.execute("""select type, title, data from media where data like '%Ambiguity Index%' and length(data) < 60000 order by 2,1;""")
-    
+
     for row in cursor:
         group = row['type']
         title = row['title']
         data  = row['data']
-        
+
         link = '{}/{}'.format(group, title)
-        print link
+        print(link)
 
         soup = BeautifulSoup(data, 'lxml', parse_only=strainer)
 
         if not soup:
-            print '\t* * * * Could not find true name (no soup) for: {}'.format(link)
+            print('\t* * * * Could not find true name (no soup) for: {}'.format(link))
             continue
-                  
+
         poss_list = soup.select('ul a[href^="http://"], ul a[href^="/pmwiki"]')
-        
+
         found = False
         for t in poss_list:
             href = t.get('href')
             tot_title = href.replace('http://tvtropes.org','').replace('/pmwiki/pmwiki.php/','')
             href_group, href_title = tot_title.split('/')
-            
+
             if href_group.lower() in goodlist:
                 found = True
-                print '\t{}'.format(tot_title)
+                print('\t{}'.format(tot_title))
                 tofix.write('{}\n'.format(tot_title))
-        
+
         if not found:
             unknown.write('{}\n'.format(link))
-                
-                #with db.cursor() as c2:
-                #    c2.execute("""update media set type = %s, title = %s where type = %s and title = %s;""", (true_type, true_title, group, title))
-                #db.commit()
+
+            #with db.cursor() as c2:
+            #    c2.execute("""update media set type = %s, title = %s where type = %s and title = %s;""", (true_type, true_title, group, title))
+            #db.commit()
 
 
 unknown.close()

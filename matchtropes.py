@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import psycopg2
 import sys
@@ -13,15 +13,15 @@ results = cursor.fetchall()
 for row in results:
     link = row[0]
     tropes = row[1]
-    
+
     tropeData[link] = tropes
 
 allMatchData = {}
 allMatchList = []
-    
-for k,v in tropeData.iteritems():
+
+for k,v in tropeData.items():
     allMatchData[k] = {}
-    for k2,v2 in tropeData.iteritems():
+    for k2,v2 in tropeData.items():
         cursor.execute("""select 1 from matches where link = %s and match_link = %s;""", (k, k2))
         if cursor.rowcount != 0:
             pass
@@ -34,21 +34,21 @@ for k,v in tropeData.iteritems():
                 else:
                     totalList = set(v + v2)
                     similarList = list(set(v) & set(v2))
-                    
+
                     totalCnt = len(totalList)
                     similarCnt = len(similarList)
                     similarPct = (similarCnt * 1.0 / totalCnt)
-                    
-                    print k, k2, len(v), len(v2), similarCnt, similarPct
-                
+
+                    print(k, k2, len(v), len(v2), similarCnt, similarPct)
+
                 allMatchData[k][k2] = (len(v), len(v2), similarCnt, similarPct)
                 allMatchList.append((k, k2, len(v), len(v2), similarCnt, similarPct, similarList))
-                
+
 try:
     cursor.executemany("""INSERT INTO matches VALUES (%s, %s, %s, %s, %s, %s, %s);""", allMatchList)
     db.commit()
 except:
-    print 'Error: %s' % link
+    print('Error: %s' % link)
 
 db.close()
 

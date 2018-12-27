@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import requests
 from time import sleep
 import re
 import psycopg2
-import pickle
 import htmlmin
 from bs4 import BeautifulSoup, Comment
 import sys
@@ -14,7 +13,7 @@ from psycopg2.extras import RealDictCursor
 # for i in $(cat indices.txt); do echo $i; echo "======="; ./missing.py $i; sleep 1; done;
 
 if len(sys.argv) < 2:
-    print 'Input search index'
+    print('Input search index')
     sys.exit(1)
 
 ind = sys.argv[1]
@@ -37,12 +36,12 @@ def soupify(d, li=[], loop=False):
         href = t.get('href')
         if atoz.search(href):
             if not loop:
-                print '\tFound new link: ' + href
+                print('\tFound new link: ' + href)
                 hrefdata = requests.get(href).text
                 sleep(1)
                 li += soupify(hrefdata, li, True)
             else:
-                print '\t\tFound loop, skipping ' + href
+                print('\t\tFound loop, skipping ' + href)
         else:
             href = href.replace('http://tvtropes.org/pmwiki/pmwiki.php/', '')
             #maybe only allow Main/
@@ -54,27 +53,27 @@ soup = BeautifulSoup(q, 'lxml')
 for s in soup.select('ul a[title*="pmwiki/pmwiki.php"], ol a[title*="pmwiki/pmwiki.php"]'):
     href = s.get('href')
     testhref = href.replace('/pmwiki/pmwiki.php/','').replace('http://tvtropes.org', '')
-    print testhref
+    print(testhref)
 
     hr_split = testhref.split('/')
     group = hr_split[0]
-    
+
     if group.lower() not in ("animation", "anime", "audioplay", "comicbook", "comicstrip", "disney", "film", "franchise", "letsplay", "lightnovel", "literature", "machinima", "manga", "manhua", "manhwa", "podcast", "radio", "series", "theatre", "videogame", "visualnovel", "webanimation", "webcomic", "weboriginal", "webvideo", "westernanimation"):
-        print '\tUnwanted group'
+        print('\tUnwanted group')
         continue
-    
+
     title = ''.join(hr_split[1:])
     name = s.text
     key = ''
     link = testhref
 
     if 'Mass Effect' in name or 'MassEffect' in title:
-        print '\tSkipping Mass Effect'
+        print('\tSkipping Mass Effect')
         continue
 
     cursor.execute("""select * from media where type = %s and title = %s;""", (group, title))
     if cursor.rowcount == 0:
-        print '\tInserting into media...'
+        print('\tInserting into media...')
 
         req = requests.get(href).text
         sleep(1)
@@ -83,15 +82,15 @@ for s in soup.select('ul a[title*="pmwiki/pmwiki.php"], ol a[title*="pmwiki/pmwi
         for script in soup(["script", "link", "style", "noscript", "img", "meta"]):
             script.extract()
         for x in soup.find_all(text=lambda text:isinstance(text, Comment)):
-            x.extract() 
+            x.extract()
 
-        htmlData = htmlmin.minify(unicode(soup), remove_empty_space=True)
+        htmlData = htmlmin.minify(str(soup), remove_empty_space=True)
 
         try:
             cursor.execute("""INSERT INTO media (type, title, name, key, data) VALUES (%s, %s, %s, %s, %s);""", (group, title, name, key, htmlData))
             db.commit()
         except:
-            print '\t===== Error with db: %s =====' % link
+            print('\t===== Error with db: %s =====' % link)
 
     else:
         htmlData = cursor.fetchone()['data']
@@ -99,12 +98,12 @@ for s in soup.select('ul a[title*="pmwiki/pmwiki.php"], ol a[title*="pmwiki/pmwi
     cursor.execute("""select 1 from tropelist where link = %s;""", (link,))
 
     if cursor.rowcount == 0:
-        print '\tPopulating...'
-        
+        print('\tPopulating...')
+
         alltropes = soupify(htmlData, [], False)
 
         try:
             cursor.execute("""INSERT INTO tropelist VALUES (%s, %s);""", (link, alltropes))
             db.commit()
         except:
-            print '\t===== Error: %s =====' % link
+            print('\t===== Error: %s =====' % link)
