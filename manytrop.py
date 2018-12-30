@@ -1,108 +1,123 @@
 #!/usr/bin/env python3
 
 import psycopg2
-import sys
+from tabulate import tabulate
 
 #---------------------------
 
-min_tot_tropes = 80
-min_common_tropes = 1
+min_tot_tropes = 100
+min_common_tropes = 2
 
 pct_exp = 0.5  # lower is more punishing
 sim_exp = 2.2  # lower is more punishing
 tro_exp = 1.2  # higher is more punishing
 
-desired_types = []
+desired_types = ('VideoGame',)
+ignored_types = ('Music',)
 
-## CHANGE
+## -------- CHANGE ---------
 
 #min_trope = 2
-#media_list = """'WesternAnimation/HowToTrainYourDragon', 'WesternAnimation/Brave', 'Disney/Moana', 'WesternAnimation/FindingNemo', 'WesternAnimation/FindingNemo', 'WesternAnimation/InsideOut', 'WesternAnimation/WallE'"""
-
-min_trope = 8  #'VideoGame/LostOdyssey',
-media_list = """'VideoGame/TheWalkingDead','VideoGame/TalesOfXillia','VideoGame/Portal1','VideoGame/Portal2','Series/Lost','VideoGame/Catherine','VideoGame/TheLastOfUs','VisualNovel/NineHoursNinePersonsNineDoors','Anime/CodeGeass','VideoGame/FinalFantasyX','VideoGame/ValkyriaChronicles','VideoGame/ShinMegamiTenseiIV','VideoGame/Persona3','VideoGame/Persona4','VideoGame/Persona5','Anime/TengenToppaGurrenLagann','VideoGame/BravelyDefault','Series/GameOfThrones','Manga/DeathNote','VideoGame/PersonaQShadowOfTheLabyrinth','VideoGame/TheWolfAmongUs','VisualNovel/VirtuesLastReward','VisualNovel/Ever17','Manga/MyHeroAcademia','VisualNovel/HigurashiWhenTheyCry','VideoGame/Xenoblade','VideoGame/XenobladeChronicles2','LightNovel/SwordArtOnline','Manga/HunterXHunter','Film/Passengers2016','Series/SpartacusBloodAndSand','VideoGame/LifeIsStrange','VisualNovel/DanganRonpa','VisualNovel/SuperDanganRonpa2','VideoGame/PrinceOfPersiaTheSandsOfTime','VideoGame/SOMA','VisualNovel/ZeroTimeDilemma','VisualNovel/DokiDokiLiteratureClub','Series/Torchwood','Series/Homeland','Series/Sherlock','WesternAnimation/HowToTrainYourDragon','Manga/AttackOnTitan','Film/TheCabinInTheWoods','Series/JessicaJones2015','Series/FridayNightLights','Manga/Berserk','Literature/AngelsAndDemons','VideoGame/HorizonZeroDawn','Manga/FutureDiary','Disney/Zootopia','Series/AscensionMiniseries','Series/TheOA','Series/StrangerThings'"""
+#media_list = ('WesternAnimation/HowToTrainYourDragon', 'WesternAnimation/Brave', 'Disney/Moana', 'WesternAnimation/FindingNemo', 'WesternAnimation/FindingNemo', 'WesternAnimation/InsideOut', 'WesternAnimation/WallE')
 
 #min_trope = 1
-#media_list = """'Series/ArrestedDevelopment','WesternAnimation/Archer','Series/AmericanVandal','Film/TeamAmericaWorldPolice','Series/WetHotAmericanSummerFirstDayOfCamp','Film/WetHotAmericanSummer','Music/FlightOfTheConchords'"""
+#media_list = ('Series/ArrestedDevelopment', 'WesternAnimation/Archer', 'Series/AmericanVandal', 'Film/TeamAmericaWorldPolice', 'Series/WetHotAmericanSummerFirstDayOfCamp', 'Film/WetHotAmericanSummer', 'Music/FlightOfTheConchords')
+
+min_trope = 2
+media_list = ('VideoGame/TheWalkingDead', 'VideoGame/TalesOfXillia', 'VideoGame/Portal1', 'VideoGame/Portal2', 'Series/Lost', 'VideoGame/Catherine', 'VideoGame/TheLastOfUs', 'VisualNovel/NineHoursNinePersonsNineDoors', 'Anime/CodeGeass', 'VideoGame/FinalFantasyX', 'VideoGame/ValkyriaChronicles', 'VideoGame/ShinMegamiTenseiIV', 'VideoGame/Persona3', 'VideoGame/Persona4', 'VideoGame/Persona5', 'Anime/TengenToppaGurrenLagann', 'VideoGame/BravelyDefault', 'Series/GameOfThrones', 'Manga/DeathNote', 'VideoGame/PersonaQShadowOfTheLabyrinth', 'VideoGame/TheWolfAmongUs', 'VisualNovel/VirtuesLastReward', 'VisualNovel/Ever17', 'Manga/MyHeroAcademia', 'VisualNovel/HigurashiWhenTheyCry', 'VideoGame/Xenoblade', 'VideoGame/XenobladeChronicles2', 'LightNovel/SwordArtOnline', 'Manga/HunterXHunter', 'Film/Passengers2016', 'Series/SpartacusBloodAndSand', 'VideoGame/LifeIsStrange', 'VisualNovel/DanganRonpa', 'VisualNovel/SuperDanganRonpa2', 'VideoGame/PrinceOfPersiaTheSandsOfTime', 'VideoGame/SOMA', 'VisualNovel/ZeroTimeDilemma', 'VisualNovel/DokiDokiLiteratureClub', 'Series/Torchwood', 'Series/Homeland', 'Series/Sherlock', 'WesternAnimation/HowToTrainYourDragon', 'Manga/AttackOnTitan', 'Film/TheCabinInTheWoods', 'Series/JessicaJones2015', 'Series/FridayNightLights', 'Manga/Berserk', 'Literature/AngelsAndDemons', 'VideoGame/HorizonZeroDawn', 'Manga/FutureDiary', 'Disney/Zootopia', 'Series/AscensionMiniseries', 'Series/TheOA', 'Series/StrangerThings')
+
+
+wantedset = None
+wantedset = {'Main/WakeUpCallBoss', 'Main/AntiFrustrationFeatures', 'Main/ExactTimeToFailure', 'Main/CentralTheme', 'Main/ZigZagged', 'Main/NiceJobBreakingItHero', 'Main/AdultFear', 'Main/InfantImmortality', 'Main/Determinator', 'Main/UpToEleven', 'Main/StealthPun', 'Main/GoldenEnding', 'Main/WellIntentionedExtremist', 'Main/TheHeroDies', 'Main/SarcasmMode', 'Main/ColorCodedCharacters', 'Main/LostInTranslation', 'Main/SubvertedTrope', 'Main/Mooks', 'Main/MortonsFork', 'VideoGame/Persona3', 'Main/VillainousBreakdown', 'Main/GenreSavvy', 'Main/YouBastard', 'Main/GenreBusting', 'Main/BreakingTheFourthWall', 'Main/DoomedByCanon', 'Main/JerkWithAHeartOfGold', 'Main/JumpScare', 'Main/GreyAndGrayMorality', 'Main/AnyoneCanDie', 'Main/MetalSlime', 'Main/PassiveAggressiveKombat', 'Main/HelloInsertNameHere', 'Main/HeroicBSOD', 'Main/NonstandardGameOver', 'Main/LampshadeHanging', 'Main/HopeSpot', 'Main/PointOfNoReturn', 'Main/RedHerring', 'Main/HiddenDepths', 'Main/MythologyGag', 'Main/WordOfGod', 'Main/InfinityPlusOneSword', 'Main/BreakTheCutie', 'Main/BookEnds', 'Main/DrivenToSuicide', 'Main/BonusBoss', 'Main/DoesThisRemindYouOfAnything', 'Main/CharacterDevelopment', 'Main/MoodWhiplash', 'Main/JustifiedTrope', 'Main/Irony', 'Main/AlasPoorVillain', 'Main/ActionGirl', 'Main/WhamLine', 'Main/WhatTheHellHero', 'Main/GameplayAndStorySegregation', 'Main/WhamShot', 'Main/StupidityIsTheOnlyOption', 'Main/FourIsDeath', 'Main/WhamEpisode', 'Main/BossBattle', 'Main/BigDamnHeroes', 'Main/CallBack', 'Main/NewGamePlus', 'Main/MeaningfulName', 'Main/TheDragon', 'Main/DidYouJustPunchOutCthulhu', 'Main/ShoutOut', 'Main/InterfaceSpoiler', 'Main/GuideDangIt', 'Main/DespairEventHorizon', 'Main/BittersweetEnding', 'Main/ChekhovsGun', 'Main/HopelessBossFight', 'Main/AllThereInTheManual', 'Main/BigBad', 'Main/Foreshadowing', 'Main/HeroicSacrifice', 'Main/ArcWords'}
 
 #---------------------------
 
-if len(sys.argv) > 1:
-    media_group = sys.argv[1]
-else:
-    media_group = None
-
-wanted_query = """
- select trope_type || '/' || trope_name, count(1)
- from troperows
- where media_type || '/' || media_name in ({})
- group by 1 having count(1) >= {};
-""".format(media_list, min_trope)
-
-# todo: prefer ones with higher counts
-
-pct_query = """
- with a as
-   (select count(1)*1.0 c from media)
- select b.trope_type||'/'||b.trope_name as tr, b.count / a.c as pct
- from tropes b, a
-"""
-
-if media_group:
-    media_group_str = """AND media_type = '{}'""".format(media_group)
-else:
-    media_group_str = ''
-
-trope_query = """
- select media_type || '/' || media_name, array_agg(trope_type || '/' || trope_name)
- from troperows
- where media_type || '/' || media_name not in ({})
- {}
- group by 1 having array_length(array_agg(trope_type || '/' || trope_name),1) >= {};
-""".format(media_list, media_group_str, min_tot_tropes)
-
 db = psycopg2.connect(host="localhost", user="brett", password="", database="tropes")
-
 cursor = db.cursor()
 
-cursor.execute(wanted_query)
+if not wantedset:
+    wanted_query = """
+     select trope_type || '/' || trope_name, count(1)
+     from troperows t join media m on t.media_id = m.id
+     where m.type || '/' || m.name in %s
+     group by 1 having count(1) >= %s;
+    """
 
-wantedset = {w[0] for w in cursor}
+    cursor.execute(wanted_query, (media_list, min_trope))
 
-#wantedset = {'Main/WakeUpCallBoss', 'Main/AntiFrustrationFeatures', 'Main/ExactTimeToFailure', 'Main/CentralTheme', 'Main/ZigZagged', 'Main/NiceJobBreakingItHero', 'Main/AdultFear', 'Main/InfantImmortality', 'Main/Determinator', 'Main/UpToEleven', 'Main/StealthPun', 'Main/GoldenEnding', 'Main/WellIntentionedExtremist', 'Main/TheHeroDies', 'Main/SarcasmMode', 'Main/ColorCodedCharacters', 'Main/LostInTranslation', 'Main/SubvertedTrope', 'Main/Mooks', 'Main/MortonsFork', 'VideoGame/Persona3', 'Main/VillainousBreakdown', 'Main/GenreSavvy', 'Main/YouBastard', 'Main/GenreBusting', 'Main/BreakingTheFourthWall', 'Main/DoomedByCanon', 'Main/JerkWithAHeartOfGold', 'Main/JumpScare', 'Main/GreyAndGrayMorality', 'Main/AnyoneCanDie', 'Main/MetalSlime', 'Main/PassiveAggressiveKombat', 'Main/HelloInsertNameHere', 'Main/HeroicBSOD', 'Main/NonstandardGameOver', 'Main/LampshadeHanging', 'Main/HopeSpot', 'Main/PointOfNoReturn', 'Main/RedHerring', 'Main/HiddenDepths', 'Main/MythologyGag', 'Main/WordOfGod', 'Main/InfinityPlusOneSword', 'Main/BreakTheCutie', 'Main/BookEnds', 'Main/DrivenToSuicide', 'Main/BonusBoss', 'Main/DoesThisRemindYouOfAnything', 'Main/CharacterDevelopment', 'Main/MoodWhiplash', 'Main/JustifiedTrope', 'Main/Irony', 'Main/AlasPoorVillain', 'Main/ActionGirl', 'Main/WhamLine', 'Main/WhatTheHellHero', 'Main/GameplayAndStorySegregation', 'Main/WhamShot', 'Main/StupidityIsTheOnlyOption', 'Main/FourIsDeath', 'Main/WhamEpisode', 'Main/BossBattle', 'Main/BigDamnHeroes', 'Main/CallBack', 'Main/NewGamePlus', 'Main/MeaningfulName', 'Main/TheDragon', 'Main/DidYouJustPunchOutCthulhu', 'Main/ShoutOut', 'Main/InterfaceSpoiler', 'Main/GuideDangIt', 'Main/DespairEventHorizon', 'Main/BittersweetEnding', 'Main/ChekhovsGun', 'Main/HopelessBossFight', 'Main/AllThereInTheManual', 'Main/BigBad', 'Main/Foreshadowing', 'Main/HeroicSacrifice', 'Main/ArcWords'}
+    wantedset = {w[0] for w in cursor}
+    #print(wantedset)
 
+    # todo: prefer ones with higher counts
 
-cursor.execute(pct_query)
+if desired_types:
+    media_type_limiter = 'm.type in %s'
+    media_type_list = desired_types
+elif ignored_types:
+    media_type_limiter = 'm.type not in %s'
+    media_type_list = ignored_types
+else:
+    media_type_limiter = '1 = %s'
+    media_type_list = 1
+
+pct_query = """
+with a as (
+  select count(1)*1.0 c from media m {}
+)
+select c.tr, c.sumcnt / a.c as pct from (
+  select b.trope_type || '/' || b.trope_name as tr, sum(cnt) as sumcnt
+  from trope_count b
+  {}
+  group by 1
+) c, a
+;""".format('where ' + media_type_limiter, 'where ' + media_type_limiter.replace('m.type', 'b.media_type'))
+
+cursor.execute(pct_query, (media_type_list, media_type_list))
 trope_data = {row[0]: 1.0 - float(row[1])**pct_exp for row in cursor}
 
+trope_query = """
+select m.type, m.name, array_agg(trope_type || '/' || trope_name)
+ from troperows t join media m on t.media_id = m.id
+ where m.type  || '/' || m.title not in %s
+ {}
+ group by 1,2 having array_length(array_agg(trope_type || '/' || trope_name), 1) >= %s;
+""".format('and ' + media_type_limiter)
 
-def getAdj(sim, tro):
+cursor.execute(trope_query, (media_list, media_type_list, min_tot_tropes))
+
+
+def get_adj(sim, tro):
     return round((sim**sim_exp) * 1.0 / (tro**tro_exp), 3)  # tropeCnt**1.4
 
 
-print('\t'.join(['TYPE', 'NAME', 'TOT', 'SIM', 'PCT', 'ADJ', 'ADJ2']))
-
-cursor.execute(trope_query)
-
+print_list = []
 for row in cursor:
-    me = row[0]
-    st = set(row[1])
+    typ = row[0]
+    nam = row[1]
+    st = set(row[2])
 
     tropeCnt = len(st)
     simt = st & wantedset
     similarCnt = len(simt)
 
-    if tropeCnt >= min_tot_tropes and similarCnt >= min_common_tropes:
-        typ, nam = me.split('/')
+    if similarCnt >= min_common_tropes:
+        pct = round(similarCnt * 1.0 / tropeCnt, 3)
+        adj = get_adj(similarCnt, tropeCnt)
 
-        if not desired_types or typ in desired_types:
-            pct = round(similarCnt * 1.0 / tropeCnt, 3)
-            adj = getAdj(similarCnt, tropeCnt)
+        simCntAdj = sum([trope_data[s] for s in simt])  # error check if not exists
+        adjPct = get_adj(simCntAdj, tropeCnt)
 
-            simCntAdj = sum([trope_data[s] for s in simt])  # error check if not exists
-            adjPct = getAdj(simCntAdj, tropeCnt)
+        p_list = [typ, nam, tropeCnt, similarCnt, pct, adj, adjPct]
+        print_list.append(p_list)
 
-            print_list = [typ, nam, str(tropeCnt), str(similarCnt), str(pct), str(adj), str(adjPct)]
-            print('\t'.join(print_list))
+tabulate_list = sorted(print_list, key=lambda x: x[6], reverse=True)[:200]
+tabulate_list = [[tabulate_list.index(x) + 1] + x for x in tabulate_list]
+print(tabulate(tabulate_list, headers=['#', 'TYPE', 'NAME', 'TOT', 'SIM', 'PCT', 'ADJ', 'ADJ2']))
+tabulate_list = sorted(print_list, key=lambda x: x[5], reverse=True)[:200]
+tabulate_list = [[tabulate_list.index(x) + 1] + x for x in tabulate_list]
+print(tabulate(tabulate_list, headers=['#', 'TYPE', 'NAME', 'TOT', 'SIM', 'PCT', 'ADJ', 'ADJ2']))
+tabulate_list = sorted(print_list, key=lambda x: x[4], reverse=True)[:200]
+tabulate_list = [[tabulate_list.index(x) + 1] + x for x in tabulate_list]
+print(tabulate(tabulate_list, headers=['#', 'TYPE', 'NAME', 'TOT', 'SIM', 'PCT', 'ADJ', 'ADJ2']))
 
 db.close()

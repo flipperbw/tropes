@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
 import requests
-from bs4 import BeautifulSoup
+# noinspection PyProtectedMember
+from bs4 import BeautifulSoup, SoupStrainer
 
-q = requests.get('http://tvtropes.org/pmwiki/index_report.php').text
-soup = BeautifulSoup(q, 'lxml')
+strainer = SoupStrainer('div', {'id': 'main-article'})
 
-for s in soup.select('ul a[title^="/pmwiki/pmwiki.php"]'):
-    href= s.get('href')
-    testhref = href.replace('/pmwiki/pmwiki.php/','').replace('http://tvtropes.org', '')
+q = requests.get('https://tvtropes.org/pmwiki/index_report.php').text
+soup = BeautifulSoup(q, 'lxml', parse_only=strainer)
+
+for s in soup.select('a[href^="/pmwiki/pmwiki.php"]'):
+    href = s.get('href')
+    testhref = href.replace('/pmwiki/pmwiki.php/', '').replace('https://tvtropes.org', '')
     print(testhref)

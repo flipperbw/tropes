@@ -1,60 +1,130 @@
 #!/usr/bin/env python3
 
 import json
-import time
+import logging
 import pickle
 import requests
+import sys
+from time import sleep
 
-selected_namespaces = ["Animation", "Anime", "AudioPlay", "ComicBook", "ComicStrip", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa", "Podcast", "Radio", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"]
 
-headers = {"User-Agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36", "Content-Type": "application/json; charset=UTF-8", "Accept": "application/json, text/javascript, */*; q=0.01", "Referer": "http://tvtropes.org/pmwiki/browse.php"}
+file_handler = logging.FileHandler(filename='trope_scrape.log')
+stdout_handler = logging.StreamHandler(sys.stdout)
 
+file_handler.setLevel(logging.WARNING)
+
+logger = logging.getLogger(__name__)
+
+file_handler.setFormatter(logging.Formatter('[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s'))
+logger.addHandler(file_handler)
+logger.addHandler(stdout_handler)
+
+
+#selected_namespaces = [
+#    "Anime", "Animation", "AudioPlay", "ComicBook", "ComicStrip", "Disney", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
+#    "Music", "Podcast", "Radio", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
+#]
+selected_namespaces = ["Disney", "Music"]
+lower_selected_namespaces = [x.lower() for x in selected_namespaces]
+
+headers = {
+    "user-agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36",
+    "agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36",
+    "content-type": "application/json; charset=UTF-8",
+    "accept": "application/json, text/javascript, */*; q=0.01",
+    'accept-language': 'en-US,en;q=0.9',
+    'origin': 'https://tvtropes.org',
+    "referer": "https://tvtropes.org/pmwiki/browse.php",
+    'authority': 'tvtropes.org',
+    'x-requested-with': 'XMLHttpRequest'
+}
+
+trope_filename = 'alltropes.pkl'
 
 empty = 0
-#pageNum = 1
-#pageNum = 220
-pageNum = 479
+#minPageNum = 1
+#minPageNum = 452
+#minPageNum = 982
+maxPageNum = 0
+#maxPageNum = 453
 
-f = open('alltropes.pkl', 'a')
+minPageNum = 26
 
-#missed 219
-#  {'group': u'Film', 'name': u'Hello Mary Lou Prom Night II', 'key': u'383812', 'title': u'HelloMaryLouPromNightII'}
-#  {'group': u'Literature', 'name': u'Heretics Of Dune', 'key': u'497943', 'title': u'HereticsOfDune'}
+def load_prev():
+    with open(trope_filename, "rb") as o:
+        while True:
+            try:
+                yield pickle.load(o)
+            except EOFError:
+                break
 
-#missed 478
-#  {'group': u'WesternAnimation', 'name': u'Superman Shazam The Return Of Black Adam', 'key': u'351964', 'title': u'SupermanShazamTheReturnOfBlackAdam'}
-#  {'group': u'VideoGame', 'name': u'Super Robot Wars W', 'key': u'384069', 'title': u'SuperRobotWarsW'}
+
+prev_pickle = list(load_prev())
+prev_pickle_names = [x['name'] for x in prev_pickle]
 
 
-while empty == 0:
-    print(pageNum)
-    data = json.dumps({"selected_namespaces": selected_namespaces, "page": pageNum, "sort": "A", "randomize": 0})
-    q = requests.post("http://tvtropes.org/ajax/browse.api.php", headers=headers, data=data)
-    qj = q.json()
+stored = []
+with open(trope_filename, 'ab') as f:
+    pageNum = minPageNum
+    while empty == 0:
+        print(pageNum)
+        if 0 < maxPageNum <= pageNum:
+            logger.warning('Max page hit ({})'.format(maxPageNum))
+            break
 
-    empty = qj.get('empty')
+        data = json.dumps({"selected_namespaces": selected_namespaces, "page": pageNum, "sort": "A", "randomize": 0, 'has_image': 0})
+        q = requests.post("https://tvtropes.org/ajax/browse.api.php", headers=headers, data=data)
 
-    if empty == 0:
-        res = qj.get('results')
+        try:
+            qj = q.json()
+        except:
+            logger.error(pageNum)
+            logger.error(q.text)
+            logger.error('problem pulling')
+            sys.exit(1)
 
-        #total_list = []
-        for k,r in res.items():
-            group = r.get('groupname')
-            title = r.get('title')
-            name  = r.get('spaced_title')
-            key   = r.get('article_id')
+        empty = qj.get('empty')
 
-            entry = {'group': group, 'title': title, 'name': name, 'key': key}
-            print(entry)
+        if empty != 0:
+            logger.warning('==> empty')
+            break
+        else:
+            res = qj.get('results')
 
-            #total_list.append(entry)
-            pickle.dump(entry, f)
+            for k, r in res.items():
+                group = r.get('groupname')
+                title = r.get('title')
+                name  = r.get('spaced_title')
+                key   = r.get('article_id')
 
-        #pickle.dump(total_list, f)
+                if name in prev_pickle_names:
+                    print('==> {} already in list'.format(name))
+                    continue
 
-        pageNum += 1
+                group_typo = False
+                if group not in selected_namespaces and group.lower() in lower_selected_namespaces:
+                    group_typo = True
 
-        time.sleep(1)
+                if group in selected_namespaces or group_typo:
+                    if group_typo:
+                        newgroup = selected_namespaces[lower_selected_namespaces.index(group.lower())]
+                        print('--> Fixing group {} -> {}'.format(group, newgroup))
+                        group = newgroup
+
+                    if len([el for el in stored if el['name'].lower() == name.lower() and el['group'] == group]):
+                        print(' ==> Duplicate name: {}/{}'.format(group, name))
+                        continue
+
+                    entry = {'group': group, 'title': title, 'name': name, 'key': key}
+                    print(entry)
+                    stored.append(entry)
+                    pickle.dump(entry, f)
+                else:
+                    print('==> skipping: {}'.format(group))
+
+            pageNum += 1
+
+            sleep(1)
 
 print('Done')
 

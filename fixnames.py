@@ -3,6 +3,7 @@
 import sys
 import psycopg2
 from psycopg2.extras import RealDictCursor
+# noinspection PyProtectedMember
 from bs4 import BeautifulSoup, SoupStrainer
 
 strainer = SoupStrainer('ul', {'class': 'breadcrumbs'})
@@ -37,7 +38,7 @@ with psycopg2.connect(host="localhost", user="brett", password="", database="tro
             print('\n* * * * Could not find true name (length) for: {}'.format(link))
             continue
 
-        true_name = true_name_a[-1].get('href').replace('http://tvtropes.org','').replace('/pmwiki/pmwiki.php/','')
+        true_name = true_name_a[-1].get('href').replace('https://tvtropes.org', '').replace('/pmwiki/pmwiki.php/', '')
         true_type, true_title = true_name.split('/')
 
         if true_type == 'Videogame':

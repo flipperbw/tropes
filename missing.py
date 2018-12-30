@@ -5,6 +5,7 @@ from time import sleep
 import re
 import psycopg2
 import htmlmin
+# noinspection PyProtectedMember
 from bs4 import BeautifulSoup, Comment
 import sys
 from psycopg2.extras import RealDictCursor
@@ -17,8 +18,8 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 ind = sys.argv[1]
-if 'http://tvtropes.org/pmwiki/pmwiki.php' not in ind:
-    ind = 'http://tvtropes.org/pmwiki/pmwiki.php/' + ind
+if 'https://tvtropes.org/pmwiki/pmwiki.php' not in ind:
+    ind = 'https://tvtropes.org/pmwiki/pmwiki.php/' + ind
 
 db = psycopg2.connect(host="localhost", user="brett", password="", database="tropes")
 cursor = db.cursor(cursor_factory=RealDictCursor)
@@ -29,12 +30,13 @@ q = requests.get(ind).text
 
 atoz = re.compile('Tropes.To.$')
 
-def soupify(d, li=[], loop=False):
-    soup = BeautifulSoup(d, 'lxml')
-    tropeList = soup.select('ul a[title^="http://"]')
-    for t in tropeList:
-        href = t.get('href')
-        if atoz.search(href):
+
+def soupify(d, li, loop=False):
+    _soup = BeautifulSoup(d, 'lxml')
+    trope_list = _soup.select('ul a[title^="https://"]')
+    for t in trope_list:
+        _href = t.get('href')
+        if atoz.search(_href):
             if not loop:
                 print('\tFound new link: ' + href)
                 hrefdata = requests.get(href).text
@@ -43,16 +45,17 @@ def soupify(d, li=[], loop=False):
             else:
                 print('\t\tFound loop, skipping ' + href)
         else:
-            href = href.replace('http://tvtropes.org/pmwiki/pmwiki.php/', '')
-            #maybe only allow Main/
-            li.append(href)
+            _href = href.replace('https://tvtropes.org/pmwiki/pmwiki.php/', '')
+            # maybe only allow Main/
+            li.append(_href)
     return li
+
 
 soup = BeautifulSoup(q, 'lxml')
 
 for s in soup.select('ul a[title*="pmwiki/pmwiki.php"], ol a[title*="pmwiki/pmwiki.php"]'):
     href = s.get('href')
-    testhref = href.replace('/pmwiki/pmwiki.php/','').replace('http://tvtropes.org', '')
+    testhref = href.replace('/pmwiki/pmwiki.php/', '').replace('https://tvtropes.org', '')
     print(testhref)
 
     hr_split = testhref.split('/')
@@ -81,7 +84,7 @@ for s in soup.select('ul a[title*="pmwiki/pmwiki.php"], ol a[title*="pmwiki/pmwi
 
         for script in soup(["script", "link", "style", "noscript", "img", "meta"]):
             script.extract()
-        for x in soup.find_all(text=lambda text:isinstance(text, Comment)):
+        for x in soup.find_all(text=lambda text: isinstance(text, Comment)):
             x.extract()
 
         htmlData = htmlmin.minify(str(soup), remove_empty_space=True)

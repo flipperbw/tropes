@@ -29,7 +29,7 @@ cursor.execute("""select match_link from matches where link = %s;""", (k,))
 prevMatches = cursor.fetchall()
 preMatchList = [m[0] for m in prevMatches]
 
-for k2,v2 in tropeData.items():
+for k2, v2 in tropeData.items():
     if k2 in preMatchList:
         pass
     else:
@@ -51,6 +51,6 @@ try:
     cursor.executemany("""INSERT INTO matches VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);""", allMatchList)
     db.commit()
 except:
-    print('Error: %s' % link)
+    print('Error inserting many')
 
 db.close()

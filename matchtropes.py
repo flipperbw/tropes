@@ -8,7 +8,7 @@ cursor = db.cursor()
 
 tropeData = {}
 
-cursor.execute("""select * from tropelist where link = %s;""", (sys.argv[1],))
+cursor.execute("""select * from troperows where link = %s;""", (sys.argv[1],))
 results = cursor.fetchall()
 for row in results:
     link = row[0]
@@ -19,9 +19,9 @@ for row in results:
 allMatchData = {}
 allMatchList = []
 
-for k,v in tropeData.items():
+for k, v in tropeData.items():
     allMatchData[k] = {}
-    for k2,v2 in tropeData.items():
+    for k2, v2 in tropeData.items():
         cursor.execute("""select 1 from matches where link = %s and match_link = %s;""", (k, k2))
         if cursor.rowcount != 0:
             pass
@@ -31,6 +31,7 @@ for k,v in tropeData.items():
                 if test:
                     similarCnt = test[2]
                     similarPct = test[3]
+                    similarList = []
                 else:
                     totalList = set(v + v2)
                     similarList = list(set(v) & set(v2))
@@ -48,7 +49,7 @@ try:
     cursor.executemany("""INSERT INTO matches VALUES (%s, %s, %s, %s, %s, %s, %s);""", allMatchList)
     db.commit()
 except:
-    print('Error: %s' % link)
+    print('Error with many')
 
 db.close()
 

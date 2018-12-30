@@ -5,14 +5,15 @@ from time import sleep
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import htmlmin
+# noinspection PyProtectedMember
 from bs4 import BeautifulSoup, Comment
 
 db = psycopg2.connect(host="localhost", user="brett", password="", database="tropes")
 cursor = db.cursor(cursor_factory=RealDictCursor)
 
-baseurl = 'http://tvtropes.org/pmwiki/pmwiki.php/'
+baseurl = 'https://tvtropes.org/pmwiki/pmwiki.php/'
 
-#links = []
+# links = []
 with open('fixlist.txt', 'r') as f:
     links = [line.strip() for line in f]
 
@@ -49,7 +50,7 @@ for link in links:
 
         for script in soup(["script", "link", "style", "noscript", "img", "meta"]):
             script.extract()
-        for x in soup.find_all(text=lambda text:isinstance(text, Comment)):
+        for x in soup.find_all(text=lambda text: isinstance(text, Comment)):
             x.extract()
 
         name_div = soup.find('ul', {'class': 'breadcrumbs'})
@@ -61,7 +62,7 @@ for link in links:
             if len(true_name_a) == 0:
                 print('\t* * * Could not find true name (length) for: {}'.format(link))
             else:
-                true_name = true_name_a[-1].get('href').replace('http://tvtropes.org','').replace('/pmwiki/pmwiki.php/','')
+                true_name = true_name_a[-1].get('href').replace('https://tvtropes.org', '').replace('/pmwiki/pmwiki.php/', '')
                 true_type, true_title = true_name.split('/')
 
                 if true_type.lower() not in ("animation", "anime", "audioplay", "comicbook", "comicstrip", "disney", "film", "franchise", "letsplay", "lightnovel", "literature", "machinima", "manga", "manhua", "manhwa", "podcast", "radio", "series", "theatre", "videogame", "visualnovel", "webanimation", "webcomic", "weboriginal", "webvideo", "westernanimation"):

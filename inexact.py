@@ -2,10 +2,11 @@
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
+# noinspection PyProtectedMember
 from bs4 import BeautifulSoup, SoupStrainer
 
 strainer = SoupStrainer('div', {'class': 'page-content'})
-baseurl = 'http://tvtropes.org/pmwiki/pmwiki.php/'
+baseurl = 'https://tvtropes.org/pmwiki/pmwiki.php/'
 
 goodlist = ("disney", "animation", "anime", "audioplay", "comicbook", "comicstrip", "film", "franchise", "letsplay", "lightnovel", "literature", "machinima", "manga", "manhua", "manhwa", "podcast", "radio", "series", "theatre", "videogame", "visualnovel", "webanimation", "webcomic", "weboriginal", "webvideo", "westernanimation")
 
@@ -32,12 +33,12 @@ with psycopg2.connect(host="localhost", user="brett", password="", database="tro
             print('\t* * * * Could not find true name (no soup) for: {}'.format(link))
             continue
 
-        poss_list = soup.select('ul a[href^="http://"], ul a[href^="/pmwiki"]')
+        poss_list = soup.select('ul a[href^="https://"], ul a[href^="/pmwiki"]')
 
         found = False
         for t in poss_list:
             href = t.get('href')
-            tot_title = href.replace('http://tvtropes.org','').replace('/pmwiki/pmwiki.php/','')
+            tot_title = href.replace('https://tvtropes.org', '').replace('/pmwiki/pmwiki.php/', '')
             href_group, href_title = tot_title.split('/')
 
             if href_group.lower() in goodlist:
