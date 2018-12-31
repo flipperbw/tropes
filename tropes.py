@@ -38,6 +38,8 @@ headers = {
     'authority': 'tvtropes.org',
     'x-requested-with': 'XMLHttpRequest'
 }
+session = requests.Session()
+session.headers.update(headers)
 
 trope_filename = 'alltropes.pkl'
 
@@ -62,7 +64,6 @@ def load_prev():
 prev_pickle = list(load_prev())
 prev_pickle_names = [x['name'] for x in prev_pickle]
 
-
 stored = []
 with open(trope_filename, 'ab') as f:
     pageNum = minPageNum
@@ -73,7 +74,7 @@ with open(trope_filename, 'ab') as f:
             break
 
         data = json.dumps({"selected_namespaces": selected_namespaces, "page": pageNum, "sort": "A", "randomize": 0, 'has_image': 0})
-        q = requests.post("https://tvtropes.org/ajax/browse.api.php", headers=headers, data=data)
+        q = session.post("https://tvtropes.org/ajax/browse.api.php", data=data)
 
         try:
             qj = q.json()

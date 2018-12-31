@@ -25,6 +25,20 @@ logger.addHandler(stdout_handler)
 
 baseurl = 'https://tvtropes.org/pmwiki/pmwiki.php'
 
+headers = {
+    "user-agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36",
+    "agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36",
+    "content-type": "application/json; charset=UTF-8",
+    "accept": "application/json, text/javascript, */*; q=0.01",
+    'accept-language': 'en-US,en;q=0.9',
+    'origin': 'https://tvtropes.org',
+    "referer": "https://tvtropes.org/pmwiki/browse.php",
+    'authority': 'tvtropes.org',
+    'x-requested-with': 'XMLHttpRequest'
+}
+session = requests.Session()
+session.headers.update(headers)
+
 db = psycopg2.connect(host="localhost", user="brett", password="", database="tropes")
 cursor = db.cursor()
 
@@ -59,7 +73,7 @@ for item in items:
         print(link)
 
         try:
-            htmlData = requests.get(link).text
+            htmlData = session.get(link).text
             soup = BeautifulSoup(htmlData, 'lxml')
 
             for script in soup(["script", "link", "style", "noscript", "img", "meta"]):

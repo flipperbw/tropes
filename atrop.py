@@ -116,6 +116,19 @@ cursor = db.cursor(cursor_factory=RealDictCursor)
 
 
 last_request = None
+headers = {
+    "user-agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36",
+    "agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36",
+    "content-type": "application/json; charset=UTF-8",
+    "accept": "application/json, text/javascript, */*; q=0.01",
+    'accept-language': 'en-US,en;q=0.9',
+    'origin': 'https://tvtropes.org',
+    "referer": "https://tvtropes.org/pmwiki/browse.php",
+    'authority': 'tvtropes.org',
+    'x-requested-with': 'XMLHttpRequest'
+}
+session = requests.Session()
+session.headers.update(headers)
 
 
 def wait_request(href):
@@ -130,7 +143,7 @@ def wait_request(href):
     if sleep_time > 0:
         sleep(sleep_time)
 
-    txt = requests.get(href).text
+    txt = session.get(href).text
 
     last_request = datetime.now()
 
