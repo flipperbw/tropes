@@ -320,7 +320,7 @@ class Media(object):
             self.title = true_title
             changed = True
 
-            cursor.execute("""select 1 from media where type = %s and title = %s;""", (self.group, self.title))
+            cursor.execute("""select 1 from media where type = %s and title = %s limit 1;""", (self.group, self.title))
             if cursor.rowcount != 0:
                 print('\tNew name already exists, skipping...')
                 self.delete()
@@ -404,7 +404,7 @@ class Media(object):
             logger.warning('\t=> Error (tropes), missing data: {}'.format(self.get_link()))
             return False
 
-        cursor.execute("""select 1 from troperows where media_id = %s;""", (self.media_id,))
+        cursor.execute("""select 1 from troperows where media_id = %s limit 1;""", (self.media_id,))
         if cursor.rowcount != 0:
             return True
 
