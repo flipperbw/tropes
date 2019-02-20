@@ -6,6 +6,7 @@ import re
 import requests
 import sys
 from time import sleep
+from typing import List
 
 # noinspection PyProtectedMember
 from bs4 import BeautifulSoup, SoupStrainer, Comment
@@ -106,7 +107,7 @@ def kill_gremlins(text):
 url_base = domain_base + uri_base
 
 if search_type not in ('index', 'url'):
-    search_urls = None
+    search_urls: List[str] = []
 else:
     search_urls = sys.argv[2].split(',')
     search_urls = [url_base + v if url_base not in v else v for v in search_urls]
