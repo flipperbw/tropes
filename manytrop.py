@@ -8,6 +8,8 @@ from tabulate import tabulate
 min_tot_tropes = 100
 min_common_tropes = 2
 
+results_amt = 100
+
 pct_exp = 0.5  # lower is more punishing
 sim_exp = 2.2  # lower is more punishing
 tro_exp = 1.2  # higher is more punishing
@@ -27,7 +29,7 @@ min_trope = 2
 media_list = ('VideoGame/TheWalkingDead', 'VideoGame/TalesOfXillia', 'VideoGame/Portal1', 'VideoGame/Portal2', 'Series/Lost', 'VideoGame/Catherine', 'VideoGame/TheLastOfUs', 'VisualNovel/NineHoursNinePersonsNineDoors', 'Anime/CodeGeass', 'VideoGame/FinalFantasyX', 'VideoGame/ValkyriaChronicles', 'VideoGame/ShinMegamiTenseiIV', 'VideoGame/Persona3', 'VideoGame/Persona4', 'VideoGame/Persona5', 'Anime/TengenToppaGurrenLagann', 'VideoGame/BravelyDefault', 'Series/GameOfThrones', 'Manga/DeathNote', 'VideoGame/PersonaQShadowOfTheLabyrinth', 'VideoGame/TheWolfAmongUs', 'VisualNovel/VirtuesLastReward', 'VisualNovel/Ever17', 'Manga/MyHeroAcademia', 'VisualNovel/HigurashiWhenTheyCry', 'VideoGame/Xenoblade', 'VideoGame/XenobladeChronicles2', 'LightNovel/SwordArtOnline', 'Manga/HunterXHunter', 'Film/Passengers2016', 'Series/SpartacusBloodAndSand', 'VideoGame/LifeIsStrange', 'VisualNovel/DanganRonpa', 'VisualNovel/SuperDanganRonpa2', 'VideoGame/PrinceOfPersiaTheSandsOfTime', 'VideoGame/SOMA', 'VisualNovel/ZeroTimeDilemma', 'VisualNovel/DokiDokiLiteratureClub', 'Series/Torchwood', 'Series/Homeland', 'Series/Sherlock', 'WesternAnimation/HowToTrainYourDragon', 'Manga/AttackOnTitan', 'Film/TheCabinInTheWoods', 'Series/JessicaJones2015', 'Series/FridayNightLights', 'Manga/Berserk', 'Literature/AngelsAndDemons', 'VideoGame/HorizonZeroDawn', 'Manga/FutureDiary', 'Disney/Zootopia', 'Series/AscensionMiniseries', 'Series/TheOA', 'Series/StrangerThings')
 
 
-wantedset = None
+#wantedset = None
 wantedset = {'Main/WakeUpCallBoss', 'Main/AntiFrustrationFeatures', 'Main/ExactTimeToFailure', 'Main/CentralTheme', 'Main/ZigZagged', 'Main/NiceJobBreakingItHero', 'Main/AdultFear', 'Main/InfantImmortality', 'Main/Determinator', 'Main/UpToEleven', 'Main/StealthPun', 'Main/GoldenEnding', 'Main/WellIntentionedExtremist', 'Main/TheHeroDies', 'Main/SarcasmMode', 'Main/ColorCodedCharacters', 'Main/LostInTranslation', 'Main/SubvertedTrope', 'Main/Mooks', 'Main/MortonsFork', 'VideoGame/Persona3', 'Main/VillainousBreakdown', 'Main/GenreSavvy', 'Main/YouBastard', 'Main/GenreBusting', 'Main/BreakingTheFourthWall', 'Main/DoomedByCanon', 'Main/JerkWithAHeartOfGold', 'Main/JumpScare', 'Main/GreyAndGrayMorality', 'Main/AnyoneCanDie', 'Main/MetalSlime', 'Main/PassiveAggressiveKombat', 'Main/HelloInsertNameHere', 'Main/HeroicBSOD', 'Main/NonstandardGameOver', 'Main/LampshadeHanging', 'Main/HopeSpot', 'Main/PointOfNoReturn', 'Main/RedHerring', 'Main/HiddenDepths', 'Main/MythologyGag', 'Main/WordOfGod', 'Main/InfinityPlusOneSword', 'Main/BreakTheCutie', 'Main/BookEnds', 'Main/DrivenToSuicide', 'Main/BonusBoss', 'Main/DoesThisRemindYouOfAnything', 'Main/CharacterDevelopment', 'Main/MoodWhiplash', 'Main/JustifiedTrope', 'Main/Irony', 'Main/AlasPoorVillain', 'Main/ActionGirl', 'Main/WhamLine', 'Main/WhatTheHellHero', 'Main/GameplayAndStorySegregation', 'Main/WhamShot', 'Main/StupidityIsTheOnlyOption', 'Main/FourIsDeath', 'Main/WhamEpisode', 'Main/BossBattle', 'Main/BigDamnHeroes', 'Main/CallBack', 'Main/NewGamePlus', 'Main/MeaningfulName', 'Main/TheDragon', 'Main/DidYouJustPunchOutCthulhu', 'Main/ShoutOut', 'Main/InterfaceSpoiler', 'Main/GuideDangIt', 'Main/DespairEventHorizon', 'Main/BittersweetEnding', 'Main/ChekhovsGun', 'Main/HopelessBossFight', 'Main/AllThereInTheManual', 'Main/BigBad', 'Main/Foreshadowing', 'Main/HeroicSacrifice', 'Main/ArcWords'}
 
 #---------------------------
@@ -110,13 +112,18 @@ for row in cursor:
         p_list = [typ, nam, tropeCnt, similarCnt, pct, adj, adjPct]
         print_list.append(p_list)
 
-tabulate_list = sorted(print_list, key=lambda x: x[6], reverse=True)[:200]
+# adj
+tabulate_list = sorted(print_list, key=lambda x: x[6], reverse=True)[:results_amt]
 tabulate_list = [[tabulate_list.index(x) + 1] + x for x in tabulate_list]
 print(tabulate(tabulate_list, headers=['#', 'TYPE', 'NAME', 'TOT', 'SIM', 'PCT', 'ADJ', 'ADJ2']))
-tabulate_list = sorted(print_list, key=lambda x: x[5], reverse=True)[:200]
+
+# pct
+tabulate_list = sorted(print_list, key=lambda x: x[5], reverse=True)[:results_amt]
 tabulate_list = [[tabulate_list.index(x) + 1] + x for x in tabulate_list]
 print(tabulate(tabulate_list, headers=['#', 'TYPE', 'NAME', 'TOT', 'SIM', 'PCT', 'ADJ', 'ADJ2']))
-tabulate_list = sorted(print_list, key=lambda x: x[4], reverse=True)[:200]
+
+# sim
+tabulate_list = sorted(print_list, key=lambda x: x[4], reverse=True)[:results_amt]
 tabulate_list = [[tabulate_list.index(x) + 1] + x for x in tabulate_list]
 print(tabulate(tabulate_list, headers=['#', 'TYPE', 'NAME', 'TOT', 'SIM', 'PCT', 'ADJ', 'ADJ2']))
 
