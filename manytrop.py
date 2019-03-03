@@ -5,7 +5,7 @@ from tabulate import tabulate
 
 #---------------------------
 
-min_tot_tropes = 100
+min_tot_tropes = 40
 min_common_tropes = 2
 
 results_amt = 100
@@ -14,8 +14,11 @@ pct_exp = 0.5  # lower is more punishing
 sim_exp = 2.2  # lower is more punishing
 tro_exp = 1.2  # higher is more punishing
 
-desired_types = ('VideoGame',)
-ignored_types = ('Music',)
+#desired_types = ('Series', 'Film', 'Music')
+desired_types = set()
+
+#ignored_types = ('Music',)
+ignored_types = set()
 
 ## -------- CHANGE ---------
 
@@ -25,27 +28,30 @@ ignored_types = ('Music',)
 #min_trope = 1
 #media_list = ('Series/ArrestedDevelopment', 'WesternAnimation/Archer', 'Series/AmericanVandal', 'Film/TeamAmericaWorldPolice', 'Series/WetHotAmericanSummerFirstDayOfCamp', 'Film/WetHotAmericanSummer', 'Music/FlightOfTheConchords')
 
-min_trope = 2
-media_list = (
-    'VideoGame/TheWalkingDead', 'VideoGame/TalesOfXillia', 'VideoGame/Portal1', 'VideoGame/Portal2', 'Series/Lost',
-    'VideoGame/Catherine', 'VideoGame/TheLastOfUs', 'VisualNovel/NineHoursNinePersonsNineDoors', 'Anime/CodeGeass',
-    'VideoGame/FinalFantasyX', 'VideoGame/ValkyriaChronicles', 'VideoGame/ShinMegamiTenseiIV', 'VideoGame/Persona3',
-    'VideoGame/Persona4', 'VideoGame/Persona5', 'Anime/TengenToppaGurrenLagann', 'VideoGame/BravelyDefault',
-    'Series/GameOfThrones', 'Manga/DeathNote', 'VideoGame/PersonaQShadowOfTheLabyrinth', 'VideoGame/TheWolfAmongUs',
-    'VisualNovel/VirtuesLastReward', 'VisualNovel/Ever17', 'Manga/MyHeroAcademia', 'VisualNovel/HigurashiWhenTheyCry',
-    'VideoGame/Xenoblade', 'VideoGame/XenobladeChronicles2', 'LightNovel/SwordArtOnline', 'Manga/HunterXHunter',
-    'Film/Passengers2016', 'Series/SpartacusBloodAndSand', 'VideoGame/LifeIsStrange', 'VisualNovel/DanganRonpa',
-    'VisualNovel/SuperDanganRonpa2', 'VideoGame/PrinceOfPersiaTheSandsOfTime', 'VideoGame/SOMA',
-    'VisualNovel/ZeroTimeDilemma', 'VisualNovel/DokiDokiLiteratureClub', 'Series/Torchwood', 'Series/Homeland',
-    'Series/Sherlock', 'WesternAnimation/HowToTrainYourDragon', 'Manga/AttackOnTitan', 'Film/TheCabinInTheWoods',
-    'Series/JessicaJones2015', 'Series/FridayNightLights', 'Manga/Berserk', 'Literature/AngelsAndDemons',
-    'VideoGame/HorizonZeroDawn', 'Manga/FutureDiary', 'Disney/Zootopia', 'Series/AscensionMiniseries', 'Series/TheOA',
-    'Series/StrangerThings'
-)
+#min_trope = 2
+#media_list = (
+#    'VideoGame/TheWalkingDead', 'VideoGame/TalesOfXillia', 'VideoGame/Portal1', 'VideoGame/Portal2', 'Series/Lost',
+#    'VideoGame/Catherine', 'VideoGame/TheLastOfUs', 'VisualNovel/NineHoursNinePersonsNineDoors', 'Anime/CodeGeass',
+#    'VideoGame/FinalFantasyX', 'VideoGame/ValkyriaChronicles', 'VideoGame/ShinMegamiTenseiIV', 'VideoGame/Persona3',
+#    'VideoGame/Persona4', 'VideoGame/Persona5', 'Anime/TengenToppaGurrenLagann', 'VideoGame/BravelyDefault',
+#    'Series/GameOfThrones', 'Manga/DeathNote', 'VideoGame/PersonaQShadowOfTheLabyrinth', 'VideoGame/TheWolfAmongUs',
+#    'VisualNovel/VirtuesLastReward', 'VisualNovel/Ever17', 'Manga/MyHeroAcademia', 'VisualNovel/HigurashiWhenTheyCry',
+#    'VideoGame/Xenoblade', 'VideoGame/XenobladeChronicles2', 'LightNovel/SwordArtOnline', 'Manga/HunterXHunter',
+#    'Film/Passengers2016', 'Series/SpartacusBloodAndSand', 'VideoGame/LifeIsStrange', 'VisualNovel/DanganRonpa',
+#    'VisualNovel/SuperDanganRonpa2', 'VideoGame/PrinceOfPersiaTheSandsOfTime', 'VideoGame/SOMA',
+#    'VisualNovel/ZeroTimeDilemma', 'VisualNovel/DokiDokiLiteratureClub', 'Series/Torchwood', 'Series/Homeland',
+#    'Series/Sherlock', 'WesternAnimation/HowToTrainYourDragon', 'Manga/AttackOnTitan', 'Film/TheCabinInTheWoods',
+#    'Series/JessicaJones2015', 'Series/FridayNightLights', 'Manga/Berserk', 'Literature/AngelsAndDemons',
+#    'VideoGame/HorizonZeroDawn', 'Manga/FutureDiary', 'Disney/Zootopia', 'Series/AscensionMiniseries', 'Series/TheOA',
+#    'Series/StrangerThings'
+#)
+
+min_trope = 1
+media_list = ('Film/WetHotAmericanSummer', 'Film/PopstarNeverStopNeverStopping', 'Series/WetHotAmericanSummerFirstDayOfCamp')
 
 
-#wantedset = set()
-#"""
+wantedset = set()
+"""
 wantedset = {
     'WakeUpCallBoss', 'AntiFrustrationFeatures', 'ExactTimeToFailure', 'CentralTheme', 'ZigZagged',
     'NiceJobBreakingItHero', 'AdultFear', 'InfantImmortality', 'Determinator', 'UpToEleven', 'StealthPun', 'GoldenEnding',
@@ -61,7 +67,7 @@ wantedset = {
     'InterfaceSpoiler', 'GuideDangIt', 'DespairEventHorizon', 'BittersweetEnding', 'ChekhovsGun', 'HopelessBossFight',
     'AllThereInTheManual', 'BigBad', 'Foreshadowing', 'HeroicSacrifice', 'ArcWords'
 }
-#"""
+"""
 
 #---------------------------
 
@@ -74,14 +80,14 @@ if not wantedset:
     wanted_query = """
      select trope_type || '/' || trope_name, count(1)
      from troperows t join media m on t.media_id = m.id
-     where m.type || '/' || m.name in %s
+     where m.type || '/' || m.title in %s
      group by 1 having count(1) >= %s;
     """
 
     cursor.execute(wanted_query, (media_list, min_trope))
 
     wantedset = {w[0] for w in cursor}
-    #print(wantedset)
+    print(wantedset)
 
     # todo: prefer ones with higher counts
 
@@ -139,7 +145,7 @@ for row in cursor:
         pct = round(similarCnt * 1.0 / tropeCnt, 3)
         adj = get_adj(similarCnt, tropeCnt)
 
-        simCntAdj = sum([trope_data[s] for s in simt])  # error check if not exists
+        simCntAdj = sum(trope_data[s] for s in simt)  # error check if not exists
         adjPct = get_adj(simCntAdj, tropeCnt)
 
         p_list = [typ, nam, tropeCnt, similarCnt, pct, adj, adjPct]
