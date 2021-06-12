@@ -9,7 +9,7 @@ from time import sleep
 from typing import List
 
 # noinspection PyProtectedMember
-from bs4 import BeautifulSoup, SoupStrainer, Comment
+from bs4 import BeautifulSoup, CData, Doctype, ProcessingInstruction, SoupStrainer, Comment
 import htmlmin
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -152,9 +152,9 @@ def wait_request(href):
 
 
 def clean_soup(soup):
-    for script in soup(["script", "link", "style", "noscript", "img", "meta"]):
+    for script in soup(["head", "script", "link", "style", "noscript", "img", "meta", "iframe"]):
         script.extract()
-    for x in soup.find_all(text=lambda text: isinstance(text, Comment)):
+    for x in soup.find_all(text=lambda text: isinstance(text, (Comment, CData, ProcessingInstruction, Doctype))):
         x.extract()
     return soup
 
@@ -358,7 +358,7 @@ class Media(object):
 
         if self.media_id:
             if not changed:
-                #print('-> No changes required.')
+                print('-> No changes required.')
                 try:
                     cursor.execute("""UPDATE media SET valid = true WHERE id = %s;""", (self.media_id,))
                     db.commit()
@@ -411,7 +411,7 @@ class Media(object):
 
         print('\tInserting into tropes...')
 
-        alltropes = soupify(self.data, set(), False)
+        alltropes = soupify(self.data, set())
 
         if len(alltropes) == 0:
             logger.warning('\t=> No tropes found (media_len={}): {}'.format(len(self.data), self.get_link()))

@@ -21,10 +21,15 @@ logger.addHandler(stdout_handler)
 
 
 #selected_namespaces = [
-#    "Anime", "Animation", "AudioPlay", "ComicBook", "ComicStrip", "Disney", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
+#    "Animation", "Anime", "AudioPlay", "ComicBook", "ComicStrip", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
 #    "Music", "Podcast", "Radio", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
 #]
-selected_namespaces = ["Disney", "Music"]
+selected_namespaces = [
+   "Anime", "Animation", "AudioPlay", "ComicBook", "ComicStrip", "Disney", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
+   "Podcast", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
+]
+# disney?
+#selected_namespaces = ["Music", "Radio"]
 lower_selected_namespaces = [x.lower() for x in selected_namespaces]
 
 headers = {
@@ -44,13 +49,22 @@ session.headers.update(headers)
 trope_filename = 'alltropes.pkl'
 
 empty = 0
-#minPageNum = 1
-#minPageNum = 452
-#minPageNum = 982
+minPageNum = 1
 maxPageNum = 0
-#maxPageNum = 453
 
-minPageNum = 26
+#todo why are the below returning blank? go one at a time and find the broken ones?
+
+# 564
+# {'group': 'WesternAnimation', 'title': 'HeManAndTheMastersOfTheUniverse1983', 'name': 'He Man And The Masters Of The Universe 1983', 'key': '442200'}
+# {'group': 'WesternAnimation', 'title': 'HeManAndTheMastersOfTheUniverse2002', 'name': 'He Man And The Masters Of The Universe 2002', 'key': '442203'}
+# {'group': 'ComicBook', 'title': 'HeManThundercats', 'name': 'He Man Thundercats', 'key': '576300'}
+
+# 1229
+# {'group': 'VideoGame', 'title': 'SuperMarioBrosDimensions', 'name': 'Super Mario Bros Dimensions', 'key': '601662'}
+# {'group': 'WebAnimation', 'title': 'SuperMarioBrosDX', 'name': 'Super Mario Bros DX', 'key': '818133'}
+# {'group': 'WebAnimation', 'title': 'SuperMarioBrosHeroesOfTheStars', 'name': 'Super Mario Bros Heroes Of The Stars', 'key': '599059'}
+
+
 
 def load_prev():
     with open(trope_filename, "rb") as o:
@@ -64,7 +78,7 @@ def load_prev():
 prev_pickle = list(load_prev())
 prev_pickle_names = [x['name'] for x in prev_pickle]
 
-stored = []
+stored: list = []
 with open(trope_filename, 'ab') as f:
     pageNum = minPageNum
     while empty == 0:
@@ -76,12 +90,16 @@ with open(trope_filename, 'ab') as f:
         data = json.dumps({"selected_namespaces": selected_namespaces, "page": pageNum, "sort": "A", "randomize": 0, 'has_image': 0})
         q = session.post("https://tvtropes.org/ajax/browse.api.php", data=data)
 
+        if not q.text:
+            logger.error(f'Empty response [{pageNum}]')
+            pageNum += 1
+            continue
+
         try:
             qj = q.json()
-        except:
-            logger.error(pageNum)
-            logger.error(q.text)
-            logger.error('problem pulling')
+        except Exception as e:
+            logger.error(f'problem pulling: [{pageNum}] | [{q.text}]')
+            logger.error(e)
             sys.exit(1)
 
         empty = qj.get('empty')
