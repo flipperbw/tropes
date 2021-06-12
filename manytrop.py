@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import psycopg2
 from tabulate import tabulate
@@ -87,7 +87,7 @@ if not wantedset:
     cursor.execute(wanted_query, (media_list, min_trope))
 
     wantedset = {w[0] for w in cursor}
-    print(wantedset)
+    #print(wantedset)
 
     # todo: prefer ones with higher counts
 
