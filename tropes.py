@@ -54,15 +54,21 @@ prev_pickle_names = [x['name'] for x in prev_pickle]
 #]
 #selected_namespaces = ["Music", "Radio"]
 # disney?
+# selected_namespaces = [
+#    "Anime", "Animation", "AudioPlay", "ComicBook", "ComicStrip", "Disney", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
+#    "Podcast", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
+# ]
 selected_namespaces = [
    "Anime", "Animation", "AudioPlay", "ComicBook", "ComicStrip", "Disney", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
-   "Podcast", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
+   # "Podcast", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
 ]
 
 lower_selected_namespaces = [x.lower() for x in selected_namespaces]
 
 
-minPageNum = 1
+# minPageNum = 1
+# maxPageNum = 0
+minPageNum = 200
 maxPageNum = 0
 
 #todo why are the below returning blank? go one at a time and find the broken ones?
@@ -156,5 +162,3 @@ with open(trope_filename, 'ab') as f:
             sleep(1)
 
 print('Done')
-
-f.close()

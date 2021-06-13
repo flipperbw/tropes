@@ -197,6 +197,7 @@ def get_link_data(link):
     return link_spl
 
 
+# noinspection PyBroadException
 class Media(object):
     def __init__(self, group, title, name=None, data=None, media_id=None, key=None):
         self.group = group
@@ -206,6 +207,7 @@ class Media(object):
         self.media_id = media_id
         self.key = key
 
+
     def get_link(self):
         return '{}/{}'.format(self.group, self.title)
 
@@ -214,6 +216,7 @@ class Media(object):
 
     def __str__(self):
         return self.get_link()
+
 
     def delete(self):
         if self.media_id:
@@ -225,6 +228,7 @@ class Media(object):
                 logger.error('\t=> Error with db(media): {}'.format(self.get_link()))
         else:
             logger.warning('Cannot delete entry from DB (no ID)')
+
 
     def insert_media(self):
         if self.group.lower() not in lower_wanted_groups:
@@ -246,8 +250,11 @@ class Media(object):
 
             return self.fix_media()  # move out?
 
+
     def fix_media(self):
         soup = clean_soup(BeautifulSoup(self.data, 'lxml'))
+
+        # todo should be grabbing main-container instead
 
         if 'Unable to connect to database server' in self.data:
             logger.warning('\t=> Error, Server down: {}'.format(self.get_link()))
@@ -400,6 +407,7 @@ class Media(object):
             else:
                 self.media_id = cursor.fetchone()['id']
                 return True
+
 
     def insert_tropes(self):
         res = self._insert_tropes()

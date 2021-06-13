@@ -46,9 +46,6 @@ headers = {
 session = requests.Session()
 session.headers.update(headers)
 
-db = psycopg2.connect(host="localhost", user="brett", password="", database="tropes")
-cursor = db.cursor()
-
 
 def loadall():
     with open('alltropes.pkl', "rb") as f:
@@ -59,50 +56,55 @@ def loadall():
                 break
 
 
-items = loadall()
+# noinspection PyBroadException
+def main():
+    items = loadall()
 
-for item in items:
-    group = item.get('group')
-    title = item.get('title')
-    name  = item.get('name')
-    key   = item.get('key')
+    for item in items:
+        group = item.get('group')
+        title = item.get('title')
+        name  = item.get('name')
+        key   = item.get('key')
 
-    if not (group and title):
-        logger.error('==>: Error: {}, {}'.format(group, title))
-        continue
-
-    # if want to do fresh...
-    cursor.execute("""select 1 from media where type = %s and title = %s;""", (group, title))
-    if cursor.rowcount != 0:
-        logger.warning('Skipping {}/{}'.format(group, title))
-        continue
-
-    link = '{}/{}/{}'.format(baseurl, group, title)
-    print(link)
-
-    try:
-        htmlData = session.get(link).text
-        soup = BeautifulSoup(htmlData, 'lxml')
-    except:
-        logger.error('Error with fetching: %s' % link)
-    else:
-        for script in soup(["head", "script", "link", "style", "noscript", "img", "meta", "iframe"]):
-            script.extract()
-        for x in soup.find_all(text=lambda text: isinstance(text, (Comment, CData, ProcessingInstruction, Doctype))):
-            x.extract()
-
-        htmlData = htmlmin.minify(str(soup), remove_empty_space=True)
-
-        if not htmlData:
-            logger.error(f'Blank data for {link}')
+        if not (group and title):
+            logger.error('==>: Error: {}, {}'.format(group, title))
             continue
 
+        # if want to do fresh...
+        cursor.execute("""select 1 from media where type = %s and title = %s;""", (group, title))
+        if cursor.rowcount != 0:
+            logger.warning('Skipping {}/{}'.format(group, title))
+            continue
+
+        link = '{}/{}/{}'.format(baseurl, group, title)
+        print(link)
+
         try:
-            cursor.execute("""INSERT INTO media (type, title, name, key, data) VALUES (%s, %s, %s, %s, %s);""", (group, title, name, key, htmlData))
-            db.commit()
+            html_data = session.get(link).text
+            soup = BeautifulSoup(html_data, 'lxml')
         except:
-            logger.error('Error with db: %s' % link)
+            logger.error('Error with fetching: %s' % link)
+        else:
+            for script in soup(["head", "script", "link", "style", "noscript", "img", "meta", "iframe"]):
+                script.extract()
+            for x in soup.find_all(text=lambda text: isinstance(text, (Comment, CData, ProcessingInstruction, Doctype))):
+                x.extract()
 
-    time.sleep(0.34)
+            html_data = htmlmin.minify(str(soup), remove_empty_space=True)
 
-db.close()
+            if not html_data:
+                logger.error(f'Blank data for {link}')
+                continue
+
+            try:
+                cursor.execute("""INSERT INTO media (type, title, name, key, data) VALUES (%s, %s, %s, %s, %s);""", (group, title, name, key, html_data))
+                db.commit()
+            except:
+                logger.error('Error with db: %s' % link)
+
+        time.sleep(0.34)
+
+
+with psycopg2.connect(host="localhost", user="brett", password="", database="tropes") as db:
+    with db.cursor() as cursor:
+        main()
