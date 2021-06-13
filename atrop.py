@@ -1,19 +1,33 @@
 #!/usr/bin/env python
 
-from datetime import datetime
-import logging
-import re
-import requests
 import sys
+
+if len(sys.argv) < 2:
+    print('Input search type (index|url|pkl|fix|all) and urls (,)')
+    sys.exit(1)
+
+search_type = sys.argv[1]
+if search_type not in ('index', 'url', 'pkl', 'fix', 'all'):
+    print('Search type must be index, url, pkl, fix, or all')
+    sys.exit(1)
+
+if search_type in ('index', 'url') and len(sys.argv) < 3:
+    print('Input url')
+    sys.exit(1)
+
+import logging
+import pickle
+import re
+from datetime import datetime
 from time import sleep
 from typing import List
 
-# noinspection PyProtectedMember
-from bs4 import BeautifulSoup, CData, Doctype, ProcessingInstruction, SoupStrainer, Comment
 import htmlmin
 import psycopg2
+import requests
+# noinspection PyProtectedMember
+from bs4 import BeautifulSoup, CData, Comment, Doctype, ProcessingInstruction, SoupStrainer
 from psycopg2.extras import RealDictCursor
-
 
 file_handler = logging.FileHandler(filename='atrop.log')
 stdout_handler = logging.StreamHandler(sys.stdout)
@@ -30,19 +44,6 @@ logger.addHandler(stdout_handler)
 # ./indices.py > indices.txt
 # for i in $(cat indices.txt); do echo $i; echo "======="; ./missing.py $i; sleep 1; done;
 
-if len(sys.argv) < 2:
-    print('Input search type (index|url|fix|all) and urls (,)')
-    sys.exit(1)
-
-search_type = sys.argv[1]
-if search_type not in ('index', 'url', 'fix', 'all'):
-    print('Search type must be index, url, fix, or all')
-    sys.exit(1)
-
-if search_type in ('index', 'url') and len(sys.argv) < 3:
-    print('Input url')
-    sys.exit(1)
-
 
 # -- globals
 
@@ -52,9 +53,13 @@ uri_base = '/pmwiki/pmwiki.php/'
 atoz = re.compile('Tropes(.|No)(To.)*$')
 strainer = SoupStrainer('div', {'id': 'main-article'})
 
+# wanted_groups = (
+#     "Animation", "Anime", "AudioPlay", "ComicBook", "ComicStrip", "Disney", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
+#     "Music", "Podcast", "Radio", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
+# )
 wanted_groups = (
     "Animation", "Anime", "AudioPlay", "ComicBook", "ComicStrip", "Disney", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
-    "Music", "Podcast", "Radio", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
+    "Podcast", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
 )
 
 sleep_delay = 0.5
@@ -334,7 +339,8 @@ class Media(object):
             true_key = true_key.get('value')
 
         if true_key != self.key:
-            print('\t-> Switching old key from {} to {}'.format(self.key, true_key))
+            if self.key is not None:
+                print('\t-> Switching old key from {} to {}'.format(self.key, true_key))
             self.key = true_key
             changed = True
 
@@ -352,7 +358,8 @@ class Media(object):
             if not media_name_spl or len(media_name_spl) != 2:
                 logger.warning('\t=> Error, could not find name ({}) for: {}'.format(media_name_spl, self.get_link()))
             elif self.name != media_name_fetch:
-                print('-> Changing name from {} to {}'.format(self.name, media_name_fetch))
+                if self.name is not None:
+                    print('-> Changing name from <{}> to <{}>'.format(self.name, media_name_fetch))
                 self.name = media_name_fetch
                 changed = True
 
@@ -450,15 +457,32 @@ def create_media(href):
 
 if search_type in ('index', 'url'):
     for u in search_urls:
-        q = wait_request(u)
-        _soup = clean_soup(BeautifulSoup(q, 'lxml'))
-
         if search_type == 'url':
             create_media(u)
         else:
+            q = wait_request(u)
+            _soup = clean_soup(BeautifulSoup(q, 'lxml'))
             for s in _soup.select('ul a[title*="pmwiki/pmwiki.php"], ol a[title*="pmwiki/pmwiki.php"]'):
                 shref = s.get('href')
                 create_media(shref)
+
+elif search_type == 'pkl':
+    def loadall():
+        with open('alltropes.pkl', "rb") as f:
+            while True:
+                try:
+                    yield pickle.load(f)
+                except EOFError:
+                    break
+    items = loadall()
+    for item in items:
+        p_media = Media(item.get('group'), item.get('title'))
+        print(p_media.get_link())
+
+        p_ins_res = p_media.insert_media()
+        if not p_ins_res:
+            logger.warning('\t=> Error with media {}'.format(p_media.get_link()))
+
 
 elif search_type == 'fix':
     with db.cursor('all_fix', cursor_factory=RealDictCursor, withhold=True) as c_fix:

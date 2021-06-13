@@ -30,6 +30,7 @@ selected_namespaces = [
 ]
 # disney?
 #selected_namespaces = ["Music", "Radio"]
+
 lower_selected_namespaces = [x.lower() for x in selected_namespaces]
 
 headers = {
@@ -48,7 +49,6 @@ session.headers.update(headers)
 
 trope_filename = 'alltropes.pkl'
 
-empty = 0
 minPageNum = 1
 maxPageNum = 0
 
@@ -58,12 +58,19 @@ maxPageNum = 0
 # {'group': 'WesternAnimation', 'title': 'HeManAndTheMastersOfTheUniverse1983', 'name': 'He Man And The Masters Of The Universe 1983', 'key': '442200'}
 # {'group': 'WesternAnimation', 'title': 'HeManAndTheMastersOfTheUniverse2002', 'name': 'He Man And The Masters Of The Universe 2002', 'key': '442203'}
 # {'group': 'ComicBook', 'title': 'HeManThundercats', 'name': 'He Man Thundercats', 'key': '576300'}
+# ---
+# {'group': 'Manga', 'title': 'HentaiKamen', 'name': 'Hentai Kamen', 'key': '305494'}
+# {'group': 'Manga', 'title': 'HenZemi', 'name': 'Hen Zemi', 'key': '501346'}
+# {'group': 'VideoGame', 'title': 'HEPH', 'name': 'HEPH', 'key': '765499'}
 
 # 1229
 # {'group': 'VideoGame', 'title': 'SuperMarioBrosDimensions', 'name': 'Super Mario Bros Dimensions', 'key': '601662'}
 # {'group': 'WebAnimation', 'title': 'SuperMarioBrosDX', 'name': 'Super Mario Bros DX', 'key': '818133'}
 # {'group': 'WebAnimation', 'title': 'SuperMarioBrosHeroesOfTheStars', 'name': 'Super Mario Bros Heroes Of The Stars', 'key': '599059'}
-
+# ---
+# {'group': 'Series', 'title': 'SupermarketSweep', 'name': 'Supermarket Sweep', 'key': '455411'}
+# {'group': 'VideoGame', 'title': 'SuperMash', 'name': 'Super Mash', 'key': '789435'}
+# {'group': 'Webcomic', 'title': 'SupermassiveBlackHoleAStar', 'name': 'Supermassive Black Hole A Star', 'key': '343978'}
 
 
 def load_prev():
@@ -74,10 +81,11 @@ def load_prev():
             except EOFError:
                 break
 
-
 prev_pickle = list(load_prev())
 prev_pickle_names = [x['name'] for x in prev_pickle]
 
+
+empty = 0
 stored: list = []
 with open(trope_filename, 'ab') as f:
     pageNum = minPageNum
