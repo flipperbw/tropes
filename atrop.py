@@ -434,6 +434,8 @@ class Media(object):
 
         insert_data = [(self.media_id, a.split('/')[0], a.split('/')[1]) for a in alltropes]
 
+        # todo make trope table with data
+
         try:
             cursor.executemany("""INSERT INTO troperows (media_id, trope_type, trope_name) VALUES (%s, %s, %s) ON CONFLICT DO NOTHING;""", insert_data)
             db.commit()

@@ -52,28 +52,24 @@ prev_pickle_names = [x['name'] for x in prev_pickle]
 #    "Animation", "Anime", "AudioPlay", "ComicBook", "ComicStrip", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
 #    "Music", "Podcast", "Radio", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
 #]
+
 #selected_namespaces = ["Music", "Radio"]
 # disney?
-# selected_namespaces = [
-#    "Anime", "Animation", "AudioPlay", "ComicBook", "ComicStrip", "Disney", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
-#    "Podcast", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
-# ]
 selected_namespaces = [
-   "Anime", "Animation", "AudioPlay", "ComicBook", "ComicStrip", "Disney", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
-   # "Podcast", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
+   "Animation", "Anime", "AudioPlay", "ComicBook", "ComicStrip", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
+   "Podcast", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
 ]
 
 lower_selected_namespaces = [x.lower() for x in selected_namespaces]
 
 
-# minPageNum = 1
-# maxPageNum = 0
-minPageNum = 200
+minPageNum = 1
 maxPageNum = 0
 
 #todo why are the below returning blank? go one at a time and find the broken ones?
 
 # 564
+# "Series",
 # {'group': 'WesternAnimation', 'title': 'HeManAndTheMastersOfTheUniverse1983', 'name': 'He Man And The Masters Of The Universe 1983', 'key': '442200'}
 # {'group': 'WesternAnimation', 'title': 'HeManAndTheMastersOfTheUniverse2002', 'name': 'He Man And The Masters Of The Universe 2002', 'key': '442203'}
 # {'group': 'ComicBook', 'title': 'HeManThundercats', 'name': 'He Man Thundercats', 'key': '576300'}
@@ -83,6 +79,7 @@ maxPageNum = 0
 # {'group': 'VideoGame', 'title': 'HEPH', 'name': 'HEPH', 'key': '765499'}
 
 # 1229
+# "WebAnimation"
 # {'group': 'VideoGame', 'title': 'SuperMarioBrosDimensions', 'name': 'Super Mario Bros Dimensions', 'key': '601662'}
 # {'group': 'WebAnimation', 'title': 'SuperMarioBrosDX', 'name': 'Super Mario Bros DX', 'key': '818133'}
 # {'group': 'WebAnimation', 'title': 'SuperMarioBrosHeroesOfTheStars', 'name': 'Super Mario Bros Heroes Of The Stars', 'key': '599059'}
