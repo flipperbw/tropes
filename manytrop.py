@@ -16,19 +16,19 @@ pct_exp = 0.5  # lower is more punishing
 sim_exp = 2.2  # lower is more punishing
 tro_exp = 1.2  # higher is more punishing
 
-#desired_types = ('Series', 'Film', 'Music')
-desired_types: set = set()
+#desired_types = ('LightNovel', 'WesternAnimation', 'Manga', 'Anime', 'VisualNovel')
+desired_types: tuple = tuple()
 
-#ignored_types = ('Music',)
-ignored_types: set = set()
+ignored_types = ('Franchise', 'Literature', 'Webcomic', 'ComicBook')
+#ignored_types: tuple = tuple()
 
 ## -------- CHANGE ---------
 
-#min_trope = 2
-#media_list = ('WesternAnimation/HowToTrainYourDragon', 'WesternAnimation/Brave', 'Disney/Moana', 'WesternAnimation/FindingNemo', 'WesternAnimation/InsideOut', 'WesternAnimation/WallE')
+# min_trope = 2
+# media_list = ('WesternAnimation/HowToTrainYourDragon', 'WesternAnimation/Brave', 'WesternAnimation/Moana', 'WesternAnimation/FindingNemo', 'WesternAnimation/InsideOut', 'WesternAnimation/WallE')
 
-#min_trope = 1
-#media_list = ('Series/ArrestedDevelopment', 'WesternAnimation/Archer', 'Series/AmericanVandal', 'Film/TeamAmericaWorldPolice', 'Series/WetHotAmericanSummerFirstDayOfCamp', 'Film/WetHotAmericanSummer', 'Music/FlightOfTheConchords')
+min_trope = 2
+media_list = ('Series/ArrestedDevelopment', 'WesternAnimation/Archer', 'Series/AmericanVandal', 'Film/TeamAmericaWorldPolice', 'Film/WetHotAmericanSummer', 'Series/ItsAlwaysSunnyInPhiladelphia', 'Film/PopstarNeverStopNeverStopping')
 
 #min_trope = 2
 #media_list = (
@@ -38,36 +38,33 @@ ignored_types: set = set()
 #    'VideoGame/Persona4', 'VideoGame/Persona5', 'Anime/TengenToppaGurrenLagann', 'VideoGame/BravelyDefault',
 #    'Series/GameOfThrones', 'Manga/DeathNote', 'VideoGame/PersonaQShadowOfTheLabyrinth', 'VideoGame/TheWolfAmongUs',
 #    'VisualNovel/VirtuesLastReward', 'VisualNovel/Ever17', 'Manga/MyHeroAcademia', 'VisualNovel/HigurashiWhenTheyCry',
-#    'VideoGame/Xenoblade', 'VideoGame/XenobladeChronicles2', 'LightNovel/SwordArtOnline', 'Manga/HunterXHunter',
-#    'Film/Passengers2016', 'Series/SpartacusBloodAndSand', 'VideoGame/LifeIsStrange', 'VisualNovel/DanganRonpa',
-#    'VisualNovel/SuperDanganRonpa2', 'VideoGame/PrinceOfPersiaTheSandsOfTime', 'VideoGame/SOMA',
+#    'VideoGame/XenobladeChronicles1', 'VideoGame/XenobladeChronicles2', 'LightNovel/SwordArtOnline', 'Manga/HunterXHunter',
+#    'Film/Passengers2016', 'Series/SpartacusBloodAndSand', 'VideoGame/LifeIsStrange', 'VisualNovel/DanganronpaTriggerHappyHavoc',
+#    'VideoGame/PrinceOfPersiaTheSandsOfTime', 'VideoGame/SOMA',
 #    'VisualNovel/ZeroTimeDilemma', 'VisualNovel/DokiDokiLiteratureClub', 'Series/Torchwood', 'Series/Homeland',
 #    'Series/Sherlock', 'WesternAnimation/HowToTrainYourDragon', 'Manga/AttackOnTitan', 'Film/TheCabinInTheWoods',
 #    'Series/JessicaJones2015', 'Series/FridayNightLights', 'Manga/Berserk', 'Literature/AngelsAndDemons',
-#    'VideoGame/HorizonZeroDawn', 'Manga/FutureDiary', 'Disney/Zootopia', 'Series/AscensionMiniseries', 'Series/TheOA',
+#    'VideoGame/HorizonZeroDawn', 'Manga/FutureDiary', 'WesternAnimation/Zootopia', 'Series/AscensionMiniseries', 'Series/TheOA',
 #    'Series/StrangerThings'
 #)
 
-# min_trope = 1
-# media_list = ('Film/WetHotAmericanSummer', 'Film/PopstarNeverStopNeverStopping', 'Series/WetHotAmericanSummerFirstDayOfCamp')
-
-min_trope = 2
-media_list = (
-   'VideoGame/TheWalkingDead', 'VideoGame/TalesOfXillia', 'Series/Lost',
-   'VideoGame/Catherine', 'VideoGame/TheLastOfUs', 'VisualNovel/NineHoursNinePersonsNineDoors', 'Anime/CodeGeass',
-   'VideoGame/FinalFantasyX', 'VideoGame/ValkyriaChronicles', 'VideoGame/ShinMegamiTenseiIV', 'VideoGame/Persona3',
-   'VideoGame/Persona4', 'VideoGame/Persona5', 'Anime/TengenToppaGurrenLagann', 'VideoGame/BravelyDefault',
-   'Series/GameOfThrones', 'Manga/DeathNote',
-   'VisualNovel/VirtuesLastReward', 'VisualNovel/Ever17', 'VisualNovel/HigurashiWhenTheyCry',
-   'VideoGame/Xenoblade', 'VideoGame/XenobladeChronicles2', 'LightNovel/SwordArtOnline', 'Manga/HunterXHunter',
-   'Film/Passengers2016', 'Series/SpartacusBloodAndSand', 'VideoGame/LifeIsStrange', 'VisualNovel/DanganRonpa',
-   'VisualNovel/SuperDanganRonpa2', 'VideoGame/PrinceOfPersiaTheSandsOfTime', 'VideoGame/SOMA',
-   'VisualNovel/ZeroTimeDilemma', 'VisualNovel/DokiDokiLiteratureClub', 'Series/Homeland',
-   'Series/Sherlock', 'WesternAnimation/HowToTrainYourDragon', 'Manga/AttackOnTitan', 'Film/TheCabinInTheWoods',
-   'Series/FridayNightLights', 'Manga/Berserk', 'Literature/AngelsAndDemons',
-   'VideoGame/HorizonZeroDawn', 'Manga/FutureDiary', 'Disney/Zootopia', 'Series/AscensionMiniseries', 'Series/TheOA',
-   'Series/StrangerThings'
-)
+# min_trope = 2
+# media_list = (
+#    'VideoGame/TheWalkingDead', 'VideoGame/TalesOfXillia', 'Series/Lost',
+#    'VideoGame/Catherine', 'VideoGame/TheLastOfUs', 'VisualNovel/NineHoursNinePersonsNineDoors', 'Anime/CodeGeass',
+#    'VideoGame/FinalFantasyX', 'VideoGame/ValkyriaChronicles', 'VideoGame/ShinMegamiTenseiIV', 'VideoGame/Persona3',
+#    'VideoGame/Persona4', 'VideoGame/Persona5', 'Anime/TengenToppaGurrenLagann', 'VideoGame/BravelyDefault',
+#    'Series/GameOfThrones', 'Manga/DeathNote',
+#    'VisualNovel/VirtuesLastReward', 'VisualNovel/Ever17', 'VisualNovel/HigurashiWhenTheyCry',
+#    'VideoGame/XenobladeChronicles1', 'VideoGame/XenobladeChronicles2', 'LightNovel/SwordArtOnline', 'Manga/HunterXHunter',
+#    'Film/Passengers2016', 'Series/SpartacusBloodAndSand', 'VideoGame/LifeIsStrange', 'VisualNovel/DanganronpaTriggerHappyHavoc',
+#    'VideoGame/PrinceOfPersiaTheSandsOfTime', 'VideoGame/SOMA',
+#    'VisualNovel/DokiDokiLiteratureClub', 'Series/Homeland',
+#    'Series/Sherlock', 'WesternAnimation/HowToTrainYourDragon', 'Manga/AttackOnTitan', 'Film/TheCabinInTheWoods',
+#    'Series/FridayNightLights', 'Manga/Berserk', 'Literature/AngelsAndDemons',
+#    'VideoGame/HorizonZeroDawn', 'Manga/FutureDiary', 'WesternAnimation/Zootopia', 'Series/AscensionMiniseries', 'Series/TheOA',
+#    'Series/StrangerThings'
+# )
 
 
 wantedset: set = set()
@@ -114,7 +111,7 @@ def main():
 
         # todo: prefer ones with higher counts
 
-    media_type_list: Union[set, int]
+    media_type_list: Union[tuple, int]
     if desired_types:
         media_type_limiter = 'm.type in %s'
         media_type_list = desired_types

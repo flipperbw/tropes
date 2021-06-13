@@ -54,11 +54,11 @@ atoz = re.compile('Tropes(.|No)(To.)*$')
 strainer = SoupStrainer('div', {'id': 'main-article'})
 
 # wanted_groups = (
-#     "Animation", "Anime", "AudioPlay", "ComicBook", "ComicStrip", "Disney", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
+#     "Animation", "Anime", "AudioPlay", "ComicBook", "ComicStrip", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
 #     "Music", "Podcast", "Radio", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
 # )
 wanted_groups = (
-    "Animation", "Anime", "AudioPlay", "ComicBook", "ComicStrip", "Disney", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
+    "Animation", "Anime", "AudioPlay", "ComicBook", "ComicStrip", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
     "Podcast", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
 )
 
@@ -522,6 +522,7 @@ elif search_type == 'all':
 
             _this_media.insert_tropes()
 
+        print('-> refreshing view')
         cursor.execute('''REFRESH MATERIALIZED VIEW trope_count;''')
 
 
