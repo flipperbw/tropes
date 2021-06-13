@@ -20,19 +20,6 @@ logger.addHandler(file_handler)
 logger.addHandler(stdout_handler)
 
 
-#selected_namespaces = [
-#    "Animation", "Anime", "AudioPlay", "ComicBook", "ComicStrip", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
-#    "Music", "Podcast", "Radio", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
-#]
-selected_namespaces = [
-   "Anime", "Animation", "AudioPlay", "ComicBook", "ComicStrip", "Disney", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
-   "Podcast", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
-]
-# disney?
-#selected_namespaces = ["Music", "Radio"]
-
-lower_selected_namespaces = [x.lower() for x in selected_namespaces]
-
 headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36",
     "agent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36",
@@ -48,6 +35,32 @@ session = requests.Session()
 session.headers.update(headers)
 
 trope_filename = 'alltropes.pkl'
+def load_prev():
+    with open(trope_filename, "rb") as o:
+        while True:
+            try:
+                yield pickle.load(o)
+            except EOFError:
+                break
+
+prev_pickle = list(load_prev())
+prev_pickle_names = [x['name'] for x in prev_pickle]
+
+# -------
+
+#selected_namespaces = [
+#    "Animation", "Anime", "AudioPlay", "ComicBook", "ComicStrip", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
+#    "Music", "Podcast", "Radio", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
+#]
+#selected_namespaces = ["Music", "Radio"]
+# disney?
+selected_namespaces = [
+   "Anime", "Animation", "AudioPlay", "ComicBook", "ComicStrip", "Disney", "Film", "Franchise", "LetsPlay", "LightNovel", "Literature", "Machinima", "Manga", "Manhua", "Manhwa",
+   "Podcast", "Series", "Theatre", "VideoGame", "VisualNovel", "WebAnimation", "Webcomic", "WebOriginal", "WebVideo", "WesternAnimation"
+]
+
+lower_selected_namespaces = [x.lower() for x in selected_namespaces]
+
 
 minPageNum = 1
 maxPageNum = 0
@@ -72,18 +85,7 @@ maxPageNum = 0
 # {'group': 'VideoGame', 'title': 'SuperMash', 'name': 'Super Mash', 'key': '789435'}
 # {'group': 'Webcomic', 'title': 'SupermassiveBlackHoleAStar', 'name': 'Supermassive Black Hole A Star', 'key': '343978'}
 
-
-def load_prev():
-    with open(trope_filename, "rb") as o:
-        while True:
-            try:
-                yield pickle.load(o)
-            except EOFError:
-                break
-
-prev_pickle = list(load_prev())
-prev_pickle_names = [x['name'] for x in prev_pickle]
-
+# -------
 
 empty = 0
 stored: list = []
