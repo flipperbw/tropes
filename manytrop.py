@@ -7,7 +7,7 @@ from tabulate import tabulate
 
 #---------------------------
 
-min_tot_tropes = 40
+min_tot_tropes = 50
 min_common_tropes = 2
 
 results_amt = 100
@@ -16,20 +16,27 @@ pct_exp = 0.5  # lower is more punishing
 sim_exp = 2.2  # lower is more punishing
 tro_exp = 1.2  # higher is more punishing
 
+desired_types = ('Film',)
 #desired_types = ('LightNovel', 'WesternAnimation', 'Manga', 'Anime', 'VisualNovel')
-desired_types: tuple = tuple()
+#desired_types: tuple = tuple()
 
-ignored_types = ('Franchise', 'Literature', 'Webcomic', 'ComicBook')
+ignored_types = ('Literature', 'Webcomic', 'ComicBook', 'Machinima', 'Theatre', 'LetsPlay')
 #ignored_types: tuple = tuple()
 
 ## -------- CHANGE ---------
 
+min_trope = 1
+media_list = ('Film/PalmSprings', 'Film/HappyDeathDay', 'Film/HappyDeathDay2U', 'Series/RussianDoll')  # make edge of tomorrow higher
+
+# - animated
 # min_trope = 2
 # media_list = ('WesternAnimation/HowToTrainYourDragon', 'WesternAnimation/Brave', 'WesternAnimation/Moana', 'WesternAnimation/FindingNemo', 'WesternAnimation/InsideOut', 'WesternAnimation/WallE')
 
-min_trope = 2
-media_list = ('Series/ArrestedDevelopment', 'WesternAnimation/Archer', 'Series/AmericanVandal', 'Film/TeamAmericaWorldPolice', 'Film/WetHotAmericanSummer', 'Series/ItsAlwaysSunnyInPhiladelphia', 'Film/PopstarNeverStopNeverStopping')
+# - comedy
+# min_trope = 2
+# media_list = ('Series/ArrestedDevelopment', 'WesternAnimation/Archer', 'Series/AmericanVandal', 'Film/TeamAmericaWorldPolice', 'Film/WetHotAmericanSummer', 'Series/ItsAlwaysSunnyInPhiladelphia', 'Film/PopstarNeverStopNeverStopping')
 
+# - favorites
 #min_trope = 2
 #media_list = (
 #    'VideoGame/TheWalkingDead', 'VideoGame/TalesOfXillia', 'VideoGame/Portal1', 'VideoGame/Portal2', 'Series/Lost',
@@ -45,7 +52,7 @@ media_list = ('Series/ArrestedDevelopment', 'WesternAnimation/Archer', 'Series/A
 #    'Series/Sherlock', 'WesternAnimation/HowToTrainYourDragon', 'Manga/AttackOnTitan', 'Film/TheCabinInTheWoods',
 #    'Series/JessicaJones2015', 'Series/FridayNightLights', 'Manga/Berserk', 'Literature/AngelsAndDemons',
 #    'VideoGame/HorizonZeroDawn', 'Manga/FutureDiary', 'WesternAnimation/Zootopia', 'Series/AscensionMiniseries', 'Series/TheOA',
-#    'Series/StrangerThings'
+#    'Series/StrangerThings', 'Manga/DrStone'
 #)
 
 # min_trope = 2
@@ -63,28 +70,26 @@ media_list = ('Series/ArrestedDevelopment', 'WesternAnimation/Archer', 'Series/A
 #    'Series/Sherlock', 'WesternAnimation/HowToTrainYourDragon', 'Manga/AttackOnTitan', 'Film/TheCabinInTheWoods',
 #    'Series/FridayNightLights', 'Manga/Berserk', 'Literature/AngelsAndDemons',
 #    'VideoGame/HorizonZeroDawn', 'Manga/FutureDiary', 'WesternAnimation/Zootopia', 'Series/AscensionMiniseries', 'Series/TheOA',
-#    'Series/StrangerThings'
+#    'Series/StrangerThings', 'Manga/DrStone'
 # )
 
 
 wantedset: set = set()
-"""
-wantedset = {
-    'WakeUpCallBoss', 'AntiFrustrationFeatures', 'ExactTimeToFailure', 'CentralTheme', 'ZigZagged',
-    'NiceJobBreakingItHero', 'AdultFear', 'InfantImmortality', 'Determinator', 'UpToEleven', 'StealthPun', 'GoldenEnding',
-    'WellIntentionedExtremist', 'TheHeroDies', 'SarcasmMode', 'ColorCodedCharacters', 'LostInTranslation', 'SubvertedTrope',
-    'Mooks', 'MortonsFork', 'VideoGame/Persona3', 'VillainousBreakdown', 'GenreSavvy', 'YouBastard', 'GenreBusting',
-    'BreakingTheFourthWall', 'DoomedByCanon', 'JerkWithAHeartOfGold', 'JumpScare', 'GreyAndGrayMorality', 'AnyoneCanDie',
-    'MetalSlime', 'PassiveAggressiveKombat', 'HelloInsertNameHere', 'HeroicBSOD', 'NonstandardGameOver', 'LampshadeHanging',
-    'HopeSpot', 'PointOfNoReturn', 'RedHerring', 'HiddenDepths', 'MythologyGag', 'WordOfGod', 'InfinityPlusOneSword',
-    'BreakTheCutie', 'BookEnds', 'DrivenToSuicide', 'BonusBoss', 'DoesThisRemindYouOfAnything', 'CharacterDevelopment',
-    'MoodWhiplash', 'JustifiedTrope', 'Irony', 'AlasPoorVillain', 'ActionGirl', 'WhamLine', 'WhatTheHellHero',
-    'GameplayAndStorySegregation', 'WhamShot', 'StupidityIsTheOnlyOption', 'FourIsDeath', 'WhamEpisode', 'BossBattle',
-    'BigDamnHeroes', 'CallBack', 'NewGamePlus', 'MeaningfulName', 'TheDragon', 'DidYouJustPunchOutCthulhu', 'ShoutOut',
-    'InterfaceSpoiler', 'GuideDangIt', 'DespairEventHorizon', 'BittersweetEnding', 'ChekhovsGun', 'HopelessBossFight',
-    'AllThereInTheManual', 'BigBad', 'Foreshadowing', 'HeroicSacrifice', 'ArcWords'
-}
-"""
+# wantedset = {
+#     'WakeUpCallBoss', 'AntiFrustrationFeatures', 'ExactTimeToFailure', 'CentralTheme', 'ZigZagged',
+#     'NiceJobBreakingItHero', 'AdultFear', 'InfantImmortality', 'Determinator', 'UpToEleven', 'StealthPun', 'GoldenEnding',
+#     'WellIntentionedExtremist', 'TheHeroDies', 'SarcasmMode', 'ColorCodedCharacters', 'LostInTranslation', 'SubvertedTrope',
+#     'Mooks', 'MortonsFork', 'VideoGame/Persona3', 'VillainousBreakdown', 'GenreSavvy', 'YouBastard', 'GenreBusting',
+#     'BreakingTheFourthWall', 'DoomedByCanon', 'JerkWithAHeartOfGold', 'JumpScare', 'GreyAndGrayMorality', 'AnyoneCanDie',
+#     'MetalSlime', 'PassiveAggressiveKombat', 'HelloInsertNameHere', 'HeroicBSOD', 'NonstandardGameOver', 'LampshadeHanging',
+#     'HopeSpot', 'PointOfNoReturn', 'RedHerring', 'HiddenDepths', 'MythologyGag', 'WordOfGod', 'InfinityPlusOneSword',
+#     'BreakTheCutie', 'BookEnds', 'DrivenToSuicide', 'BonusBoss', 'DoesThisRemindYouOfAnything', 'CharacterDevelopment',
+#     'MoodWhiplash', 'JustifiedTrope', 'Irony', 'AlasPoorVillain', 'ActionGirl', 'WhamLine', 'WhatTheHellHero',
+#     'GameplayAndStorySegregation', 'WhamShot', 'StupidityIsTheOnlyOption', 'FourIsDeath', 'WhamEpisode', 'BossBattle',
+#     'BigDamnHeroes', 'CallBack', 'NewGamePlus', 'MeaningfulName', 'TheDragon', 'DidYouJustPunchOutCthulhu', 'ShoutOut',
+#     'InterfaceSpoiler', 'GuideDangIt', 'DespairEventHorizon', 'BittersweetEnding', 'ChekhovsGun', 'HopelessBossFight',
+#     'AllThereInTheManual', 'BigBad', 'Foreshadowing', 'HeroicSacrifice', 'ArcWords'
+# }
 
 #---------------------------
 
@@ -175,11 +180,13 @@ def main():
     # adj
     tabulate_list = sorted(print_list, key=lambda x: x[5], reverse=True)[:results_amt]
     tabulate_list = [[tabulate_list.index(x) + 1] + x for x in tabulate_list]
+    print()
     print(tabulate(tabulate_list, headers=['#', 'TYPE', 'NAME', 'TOT', 'SIM', 'PCT', 'ADJ', 'ADJ2']))
 
     # pct
     tabulate_list = sorted(print_list, key=lambda x: x[4], reverse=True)[:results_amt]
     tabulate_list = [[tabulate_list.index(x) + 1] + x for x in tabulate_list]
+    print()
     print(tabulate(tabulate_list, headers=['#', 'TYPE', 'NAME', 'TOT', 'SIM', 'PCT', 'ADJ', 'ADJ2']))
 
 
